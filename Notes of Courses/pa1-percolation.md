@@ -88,6 +88,6 @@
 
 模拟程序问题不大，直接贴我的实现：[PercolationStats.java](https://github.com/mingyueanyao/algorithms-princeton-coursera/blob/master/Codes%20of%20Programming%20Assignments/percolation/PercolationStats.java)，下面是最终评测结果。
 
-![percolation-result](https://images2018.cnblogs.com/blog/886021/201805/886021-20180529231633430-1150745212.png)
+![part1-pa1-result](https://images2018.cnblogs.com/blog/886021/201806/886021-20180610190033445-111290097.png)
 
 课程结束才写的博客，发现结束的课程编程作业会被锁起来，看不了评测细节，于是又注册了小号加入课程提交代码，哈哈哈哈。
