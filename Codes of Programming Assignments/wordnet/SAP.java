@@ -1,13 +1,13 @@
 import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.StdIn;
 import edu.princeton.cs.algs4.StdOut;
+import edu.princeton.cs.algs4.StdRandom;
 
 import edu.princeton.cs.algs4.Stack;
 import edu.princeton.cs.algs4.Queue;
 import edu.princeton.cs.algs4.Digraph;
 
 public class SAP {
-    private int[] cache;              // store recently v, w, length and ancestor
     private int length;               // length of the shortest path between V and W
     private int ancestor;             // the nearest ancestor of V and W
     private Digraph copyG;            // save the copy of associated digraph
@@ -23,7 +23,6 @@ public class SAP {
         if (G == null) {
             throw new IllegalArgumentException("argument to SAP() is null");
         }
-        cache = new int[2];
         copyG = new Digraph(G);
         distTo1 = new int[G.V()];
         distTo2 = new int[G.V()];
@@ -37,10 +36,6 @@ public class SAP {
     public int length(int v, int w) {
         validateVertex(v);
         validateVertex(w);
-        if ((cache[0] == v && cache[1] == w)
-            || (cache[1] == v && cache[0] == w)) {
-                return length;    // store the recently length()
-        }
         compute(v, w);
         return length;   
     }
@@ -49,11 +44,7 @@ public class SAP {
     // -1 if no such path
     public int ancestor(int v, int w) {
         validateVertex(v);
-        validateVertex(w);
-        if ((cache[0] == v && cache[1] == w)
-            || (cache[1] == v && cache[0] == w)) {
-                return ancestor;    // store the recently ancestor()
-        }
+        validateVertex(w);    
         compute(v, w);
         return ancestor;
     }
@@ -77,21 +68,19 @@ public class SAP {
     }
 
     // using two bfs lockstep from v and w to compute sap
-    private void compute(int v, int w) {
+    private void compute(int v, int w) { 
         length = -1;
         ancestor = -1;
-        Queue<Integer> q1 = new Queue<Integer>();
-        Queue<Integer> q2 = new Queue<Integer>();
+        distTo1[v] = 0;
+        distTo2[w] = 0;
         marked1[v] = true;
         marked2[w] = true;
         stack1.push(v);
         stack2.push(w);
-        distTo1[v] = 0;
-        distTo2[w] = 0;
+        Queue<Integer> q1 = new Queue<Integer>();
+        Queue<Integer> q2 = new Queue<Integer>();
         q1.enqueue(v);
         q2.enqueue(w); 
-        cache[0] = v;
-        cache[1] = w;
         bfs(q1, q2);
     }
 
@@ -102,14 +91,14 @@ public class SAP {
         Queue<Integer> q1 = new Queue<Integer>();
         Queue<Integer> q2 = new Queue<Integer>();
         for (int v1 : v) {
-            stack1.push(v1);
             marked1[v1] = true;
+            stack1.push(v1);
             distTo1[v1] = 0;
             q1.enqueue(v1);
         }
         for (int w1 : w) {
-            stack2.push(w1);
             marked2[w1] = true;
+            stack2.push(w1);
             distTo2[w1] = 0;
             q2.enqueue(w1);
         }
@@ -204,7 +193,6 @@ public class SAP {
         In in = new In(args[0]);
         Digraph G = new Digraph(in);
         SAP sap = new SAP(G);
-
         while (!StdIn.isEmpty()) {
             int v = StdIn.readInt();
             int w = StdIn.readInt();
