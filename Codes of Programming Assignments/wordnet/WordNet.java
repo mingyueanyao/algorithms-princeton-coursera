@@ -8,9 +8,7 @@ import edu.princeton.cs.algs4.Topological;
 
 public class WordNet {
     private ST<String, SET<Integer>> synsets;    // noun and ids contain the noun
-
     private ST<Integer, String> id_nouns;
-
     private Digraph hypernyms;
     private boolean[] outEdge;                   // is the vertex has a edge out?
     private int outSum;                          // the number of vertices having a out edge
@@ -37,9 +35,7 @@ public class WordNet {
             String str = synset.readLine();
             String[] fields = str.split(",");
             int id = Integer.parseInt(fields[0]);
-
             id_nouns.put(id, fields[1]);
-
             String[] nouns = fields[1].split(" ");
             for (int i = 0; i < nouns.length; i++) {
                 if (this.synsets.contains(nouns[i])) {

@@ -1,10 +1,10 @@
 # 编程作业一
 
-作业链接：[Percolation](http://coursera.cs.princeton.edu/algs4/assignments/percolation.html) & [Checklist](http://coursera.cs.princeton.edu/algs4/checklists/percolation.html)。
+作业链接：[Percolation](http://coursera.cs.princeton.edu/algs4/assignments/percolation.html) & [Checklist](http://coursera.cs.princeton.edu/algs4/checklists/percolation.html)
 
-我的代码：[Percolation.java](https://github.com/mingyueanyao/algorithms-princeton-coursera/blob/master/Codes%20of%20Programming%20Assignments/percolation/Percolation.java) & [PercolationStats.java](https://github.com/mingyueanyao/algorithms-princeton-coursera/blob/master/Codes%20of%20Programming%20Assignments/percolation/PercolationStats.java)。
+我的代码：[Percolation.java](https://github.com/mingyueanyao/algorithms-princeton-coursera/blob/master/Codes%20of%20Programming%20Assignments/percolation/Percolation.java) & [PercolationStats.java](https://github.com/mingyueanyao/algorithms-princeton-coursera/blob/master/Codes%20of%20Programming%20Assignments/percolation/PercolationStats.java)
 
-编程解决上篇博客[Union-Find](https://www.cnblogs.com/mingyueanyao/p/8583941.html)最后提到的渗透问题（Percolation），写个电脑程序来估计阈值 p* 。
+编程解决上篇博客 [Union-Find](https://www.cnblogs.com/mingyueanyao/p/8583941.html) 最后提到的渗透问题（Percolation），写个电脑程序来估计阈值 p* 。
 
 ## 任务摘要
 
@@ -86,7 +86,9 @@
 
 ### 2. Mote Carlo Simulation
 
-模拟程序问题不大，直接贴我的实现：[PercolationStats.java](https://github.com/mingyueanyao/algorithms-princeton-coursera/blob/master/Codes%20of%20Programming%20Assignments/percolation/PercolationStats.java)，下面是最终评测结果。
+模拟程序问题不大，直接贴我的实现：[PercolationStats.java](https://github.com/mingyueanyao/algorithms-princeton-coursera/blob/master/Codes%20of%20Programming%20Assignments/percolation/PercolationStats.java)。
+
+## 测试结果
 
 ![part1-pa1-result](https://images2018.cnblogs.com/blog/886021/201806/886021-20180610190033445-111290097.png)
 
