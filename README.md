@@ -21,7 +21,7 @@ Coursera 上普林斯顿大学的算法公开课，开个仓库小记一下。
 
 | Week  | Lecture1                                                          | Lecture2                                                                      | Programming Assignments                                                 |
 | :---: | :---------------------------------------------------------------: | :---------------------------------------------------------------------------: | :---------------------------------------------------------------------: |
-| 1    | [Undirected Graphs](https://www.cnblogs.com/mingyueanyao/p/9133805.html) | [Directed Graphs](https://www.cnblogs.com/mingyueanyao/p/9148210.html) |  |
+| 1    | [Undirected Graphs](https://www.cnblogs.com/mingyueanyao/p/9133805.html) | [Directed Graphs](https://www.cnblogs.com/mingyueanyao/p/9148210.html) |  |[PA1: WordNet](https://www.cnblogs.com/mingyueanyao/p/9166441.html)
 | 2    |                                                                   |                                                                               |                                                                         |
 | 3    |                                                                   |                                                                               |                                                                         |
 | 4    |                                                                   |                                                                               |                                                                         |
