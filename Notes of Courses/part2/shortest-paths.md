@@ -98,6 +98,112 @@ for (int v = 0; v <G.V(); v++) {
 
 ## Shortest-paths Properties
 
+### Data Stuctures
+
+这里讨论单点最短路径，我们用两个以点为索引的数组来表示最短路径树（SPT）。
+
+![spt](https://images2018.cnblogs.com/blog/886021/201806/886021-20180619144638192-620853787.png)
+
+edgeTo[i] 表示从点 0 到点 i 的最短路径上的最后一条边，用来还原最短路径，edgeTo[0] 记为 null。distTo[i] 即表示从点 0 到点 i 的最短路径长度，distTo[0] 为 0。
+
+```java
+public double distTo(int v) {
+    return distTo[v];
+}
+
+public Iterable<DirectedEdge> pathTo(int V) {
+    Stack<DirectedEdge> path = new Stack<DirectedEdge>();
+    for (DirectedEdge e = edgeTo[v]; e != null; e = edgeTo[e.from])
+        path.push(e);
+    return path;
+}
+```
+
+### Relaxation
+
+我们的最短路径 API 的实现都基于一个被称为**松弛**（relaxation）的简单操作。想象把一根橡皮筋沿最短路径拉长，找到更短的路径，也就“松弛”了这根橡皮筋。
+
+#### Edge
+
+放松边 v->w 就是要检查源点 s 到点 w 经过这条边是否会更短。
+
+```java
+private void relax(DirectedEdge e) {
+    int v = e.from(), w = e.to();
+    if (distTo[w] > distTo[v] + e.weight()) {
+        distTo[w] = distTo[v] = e.weight();
+        edgeTo[w] = e;
+    }
+}
+```
+
+下图中，左边例子称为边失效，右边则说放松是成功的。
+
+![relaxation-edge](https://images2018.cnblogs.com/blog/886021/201806/886021-20180619144738132-1473930107.png)
+
+#### Vertex
+
+点的松弛即放松由其发出的所有边。
+
+```java
+private void relax(EdgeWeightedDigraph G, int v) {
+    for (DirectedEdge e : G.adj(v)) {
+        int w = e.to();
+        if (distTo[w] > distTo[v] + e.weight()) {
+            distTo[w] = distTo[v] + e.weight();
+            edgeTo[w] = e;
+        }
+    }
+}
+```
+
+### Shortest-paths Optimality Conditions
+
+**最优性条件**：当且仅当对于任意从点 v 到点 w 的边 e，满足 distTo[w]$\leqslant$distTo[v]+e.weight()（没有可以放松的有效边），那么 distTo[w] 是从 s 到 w 的最短路径长度。
+
+#### 证明
+
+- **必要性**
+
+    假设 distTo[w] 是 s 到 w 的最短路径。若存在边 e(v->w) 有 distTo[v]+e.weight()<distTo[w]，显然从 s 到 v 再经 e 到 w 更短，矛盾。
+
+- **充分性**
+
+    假设 s=$v_{0}$->$v_{1}$->$v_{2}$->...->$v_{k}$=w 是 s 到 w 的最短路径，其权重记为 $OPT_{sw}$，$e_{i}$ 表示路径上的第 i 条边，有：
+
+    distTo[$v_{1}$] $\leqslant$ distTo[$v_{0}$] + $e_{1}$.weight()
+
+    distTo[$v_{2}$] $\leqslant$ distTo[$v_{1}$] + $e_{2}$.weight()
+
+    ...
+
+    distTo[$v_{k}$] $\leqslant$ distTo[$v_{k-1}$] + $e_{k}$.weight()
+
+    综合这些不等式并去掉 distTo[$v_{0}$] = distTo[s] = 0:
+
+    distTo[w] = distTo[$v_{k}$] $\leqslant$ $e_{1}$.weight() + $e_{2}$.weight() + ... + $e_{k}$.weight() = $OPT_{sw}$
+
+    又因为 distTo[w] 是从 s 到 w 的某条路径的长度，不会比最短路径更短，所以下列式子成立。
+
+    $OPT_{sw} \leqslant$ distTo[w] $\leqslant OPT_{sw}$
+
+### Generic Shortest-paths Algorithm
+
+由上述最优性条件马上可以得到一个计算单点最短路径问题的 SPT 的通用算法：
+
+- 将 distTo[s] 初始化为 0，其它 distTo[] 元素初始化为无穷大。
+- 重复放松图 G 中的任意边，直到不存在有效边为止（满足最优性条件）。
+
+#### Pf
+
+- 算法会把 distTo[v] 赋值成某条从 s 到 v 的路径长，且 edgeTo[v] 是该路径的最后一条边。
+- 对于 s 可到达的点 v，distTo[v]初始为无穷大，肯定存在有效边。
+- 每次成功的放松都会减少某些 distTo[v]，distTo[v] 减少的次数是有限的。
+
+**注**：暂时不考虑负权重。
+
+通用算法没有指定边放松的顺序，它为我们提供了证明算法可以计算 SPT 的方式：证明算法会放松所有边直到没有有效边。
+
 ## Dijkstra's Algorithm
 
 ## Edge-weighted DAGs
