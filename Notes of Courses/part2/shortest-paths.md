@@ -206,6 +206,75 @@ private void relax(EdgeWeightedDigraph G, int v) {
 
 ## Dijkstra's Algorithm
 
+Dijkstra 算法采用和 Prim 算法构建 MST 类似的策略来构建 SPT：每次添加的都是离起点最近的非树顶点。
+
+![dijkstra-sample-graph](https://images2018.cnblogs.com/blog/886021/201806/886021-20180620162058537-2144493005.png)
+
+从起点 s(0) 开始，维护两个数组 distTo 和 edgeTo 来表示 SPT，先把 distTo[0] 置为 0.0，其它 distTo 元素置为无穷大，edgeTo[0] 置为 null。
+
+最初 distTo 数组中最小的非树点（离 SPT 最近的非树顶点）即是 distTo[0]，把点 0 加入 SPT 并进行放松操作。其它 distTo 被初始化为无穷大，点 0 发出的都是有效边，更新对应的 distTo 和 edgeTo 元素。
+
+现在 distTo 数组中最小的是非树顶点是 distTo[1]（显然还需要索引优先队列来帮我们快速获取离 SPT 最近的非树顶点），加入 SPT 并放松点 1。distTo[2] 和 distTo[3] 初始更新，边 1-7 无效。
+
+![dijkstra-sample1](https://images2018.cnblogs.com/blog/886021/201806/886021-20180620162112922-1873018993.png)
+
+现在点 7 是离 SPT 最近的非树点，加入 SPT 并放松，边 2-7 有效，更新 distTo[2]，edgeTo[2] 变为 7->2。
+
+![dijkstra-sample2](https://images2018.cnblogs.com/blog/886021/201806/886021-20180620162124756-1699453755.png)
+
+每次挑离 SPT 最近的非树点加入 SPT 并进行放松操作，直到可到达的点都被加入 SPT，也就完成了计算。
+
+![dijkstra-sample-result](https://images2018.cnblogs.com/blog/886021/201806/886021-20180620164946867-1643933501.png)
+
+s 可到达的点都只会被放松一次，当 v 被放松时，有 distTo[w]$\leqslant$distTo[v]+e.weight()，而且该不等式在算法结束前都会成立，因为：
+
+- distTo[w] 不会增加。因为放松操作只有可能减少 distTo[w]。
+- distTo[v] 不会改变。边的权重非负，我们每次选择的又都是最小的 distTo[] 值，后面的放松操作不可能使任何 distTo[] 的值小于 distTo[v]。
+
+满足最优性条件，所以 Dijkstra 算法可以解决边权重非负的加权有向图的单点最短路径问题。
+
+### Dijkstra: Java Implementation
+
+```java
+public class DijkstraSP {
+    private DirectedEdge[] edgeTo;
+    private double[] distTo;
+    private IndexMinPQ<Double> pq;
+
+    public DijkstraSP(EdgeWeightedDigraph G, int s) {
+        edgeTo = new DirectedEdge[G.V()];
+        distTo = new double[G.V()];
+        pq = new IndexMinPQ<Double>(G.V());
+
+        for (int v = 0; v < G.V(); v++)
+            distTo[v] = Double.POSITIVE_INFINITY;
+        distTo[s] = 0.0;
+
+        pq.insert(s, 0.0);
+        while (!pq.isEmpty()) {
+            int v = pq.delMin();
+            for (DirectedEdge e : G.adj(v))
+                relax(e);
+        }
+    }
+
+    private void relax(DirectedEdge e) {
+        int v = e.from(), w = e.to();
+        if (distTo[w] > distTo[v] + e.weight()) {
+            distTo[w] = distTo[v] + e.weight();
+            edgeTo[w] = e;
+            if (pq.contains(w)) {
+                pq.decreaseKey(w, distTo[w]);
+            } else {
+                pq.insert(w, distTo[w]);
+            }
+        }
+    }
+}
+```
+
+时间复杂度取决于优先队列的实现，二叉堆的话是 $ElogV$ 级别。
+
 ## Edge-weighted DAGs
 
 ## Negative Weights
