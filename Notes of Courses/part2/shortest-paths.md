@@ -277,4 +277,62 @@ public class DijkstraSP {
 
 ## Edge-weighted DAGs
 
+对于带权无环有向图（DAG）我们有比 Dijkstra 更简单的算法：按图的拓扑排序来放松点，它能在线性时间内计算 SPT，能在处理负权重，还可以用来找出最长路径。
+
+![edge-weighted-dag-easy-spt](https://images2018.cnblogs.com/blog/886021/201806/886021-20180621214002156-1467545301.png)
+
+直接按拓扑排序放松点，最终的 SPT 和 Dijkstra 算法跑的一样，还不需要优先队列，时间复杂度是 $E+V$ 级别。
+
+证明其正确性也和 Dijkstra 类似，它也会满足最优性条件：
+
+- 每条边 e(v->w) 只会被放松一次（放松点 v 时），然后有不等式：distTo[w]$\leqslant$distTo[v]+e.weight()。
+- 不等式在算法结束前都会成立，因为：
+    1. distTo[w] 不会增加，因为放松只可能减少 distTo[] 的值。
+    2. distTo[v] 不会改变，因为按拓扑顺序放松，指向点 v 的边不会在点 v 被放松之后放松。
+
+- 因此，算法结束时满足最短路径的最优性条件，可以正确计算 SPT。
+
+```java
+public class AcyclicSP {
+    private DirectedEdge[] edgeTo;
+    private double[] distTo;
+
+    public AcylicSP(EdgeWeightedDigraph G, int s) {
+        edgeTo = new DirectedEdge[G.V()];
+        distTo = new double[G.V()];
+
+        for (int v = 0; v < G.V(); v++)
+            distTo[v] = Double.POSITIVE_INFINITY;
+        distTo[s] = 0.0;
+
+        Topological topological = new Topological(G);
+        for (int v : topo;ogical.order())
+            for (DirectedEdge e : G.adj(v))
+                relax(e);
+    }
+}
+```
+
+这种处理无环有向图最短路径问题的算法，可以被用于调整图片大小，且图片不会失真。
+
+![dag-sp-appication-picture](https://images2018.cnblogs.com/blog/886021/201806/886021-20180621220710617-1039449124.png)
+
+把图片的像素点当做图的点，每个点和下层的三个临近点相连，能量函数根据像素点周围的八个点计算其权重，调整大小时就把最短路径（路径上点权重总和最小）上的像素点去掉。
+
+### Longest Paths
+
+拓扑排序算法可以处理负权重边（Dijkstra 要非负才能满足最优性条件），那么我们把边权重取负后再跑，得到的就是最长路径。
+
+![longest-path-topological](https://images2018.cnblogs.com/blog/886021/201806/886021-20180621221915487-124832964.png)
+
+最长路径可以应用于平行任务调度问题。
+
+![parallel-job](https://images2018.cnblogs.com/blog/886021/201806/886021-20180621222106983-364929244.png)
+
+这个并行任务调度有优先级的限制，比如任务 0 必须在任务 1 之前完成，实际应用中很常见，像你要装好车门才能喷漆。
+
+![parallel-job-digraph](https://images2018.cnblogs.com/blog/886021/201806/886021-20180621222224318-305332985.png)
+
+将任务调度抽象成带权无环有向图，每个任务预计开始时间即为从起点到它的起始顶点的最长距离，而图的最长路径 0->9->6->8->2 即并行任务调度问题的**关键路径**（完成所有任务的最早可能时间）。
+
 ## Negative Weights
