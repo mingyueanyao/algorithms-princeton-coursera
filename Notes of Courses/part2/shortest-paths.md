@@ -336,3 +336,94 @@ public class AcyclicSP {
 将任务调度抽象成带权无环有向图，每个任务预计开始时间即为从起点到它的起始顶点的最长距离，而图的最长路径 0->9->6->8->2 即并行任务调度问题的**关键路径**（完成所有任务的最早可能时间）。
 
 ## Negative Weights
+
+Dijkstra 算法不能处理负权重边，它会直接选择当前最短的边，而不会绕远路去走负权重的边。所以下图到点 3 的最短距离直接会是边 0->3 的权重 2，而不是实际上的 0->1->2->3 的总权重 1。
+
+![negative-edge-dijkstra](https://images2018.cnblogs.com/blog/886021/201806/886021-20180622162948931-52010822.png)
+
+一个可能的尝试是把边权重都加上同一常数，让权重非负，但这样还是会改变最短路径，像上图那样。
+
+介绍能处理负权重边的算法之前，要有个概念：当且仅当图不存在负权重环（环的总权重小于 0）时，SPT 存在。
+
+![negative-cycle](https://images2018.cnblogs.com/blog/886021/201806/886021-20180622164349172-346862082.png)
+
+存在负权重环，最短路径可能一直减少下去。
+
+### Bellman-Ford
+
+**算法步骤**：
+
+1. 将 distTo[s] 初始化为 0，其它 distTo[] 元素初始化为无穷大。
+2. 重复 V 次：
+    - 放松每条边。
+
+```java
+for (int i = 0; i < G.V(); i++)
+    for (int v = 0; v < G.V(); v++)
+        for (DirectedEdge e : G.adj(v))
+            relax(e);
+```
+
+Bellman-Ford 算法能够计算任意不含负权重环的带权有向图的 SPT，所需时间正比于 $E
+\times V$。
+
+**证明**：
+
+在没有负权重环的带权有向图中，对于源点 s 可到达的点 t，会存在最短路径，不妨记为：s=$v_{0}$->$v_{1}$->...->$v_{k}$=t，显然 k $\leqslant$V-1。证明算法正确性的等价命题：算法在第 i 轮之后能得到 s 到 $v_{i}$ 的最短路径 $v_{0}$->$v_{1}$->...->$v_{i}$。
+
+- 对于 i=0，显然成立。
+- 假设算法在第 i 轮之后能得到 s 到 $v_{i}$ 的最短路径，即为 distTo[$v_{i}]$。
+- 第 i+1 轮放松后，distTo[$v_{i+1}$]=distTo[$v_{i}$]+($v_{i}$->$v_{i+1}$).weight()，因为：
+    1. 每轮放松所有点，$v_{i}$ 被放松后，distTo[$v_{i+1}$] 不会大于等式右边。
+    2. 右边即最短路径 $v_{0}$->$v_{1}$->...->$v_{i+1}$ 长度，也不会比它还小。
+
+    所以在第 i+1 轮放松后，算法能够得到从 s 到 $v_{i+1}$ 的最短路径。
+
+**改进**：
+
+如果 distTo[v] 在第 i 轮放松中没有改变，那么在第 i+1 轮中也就没有必要放松点 v。于是我们可以维护一个队列，保存 distTo[] 发生改变的那些点，下一轮只放松它们就好。为了防止重复放入，再来个布尔数组表示点是否已经在队列中。所以 Bellman-Ford 算法最坏情况下需要正比于 $E \times V$ 的时间，但实际使用时一般会快很多。
+
+### Cost Summary
+
+![cost summary](https://images2018.cnblogs.com/blog/886021/201806/886021-20180622180255276-1751826931.png)
+
+### Find A Negative Cycle
+
+如果存在负权重环的话，基于队列实现的 Bellman-Ford 算法会陷入死循环，因为第 i 轮放松后找到的最短路径最多只有 i 条边，所以有必要实现检测负权重环的方法。
+
+![negative-cycle-api](https://images2018.cnblogs.com/blog/886021/201806/886021-20180622182107657-1554123352.png)
+
+如果图有负权重环，那么 edgeTo[] 还原出来的 SPT 就会有环，于是每一轮放松之后，就检测一下 SPT 是否有环。
+
+```java
+private void findNegativeCycle() {
+    int V = edgeTo.length;
+    EdgeWeightedDigraph spt = new EdgeWeightedDigraph(V);
+    for (int v = 0; v < V; v++)
+        if (edgeTo[v] != null)
+            spt.addEdge(edgeTo[v]);
+
+    EdgeWeightedDirectedCycle cf = new EdgeWeightedDirectedCycle(spt);
+    cycle = cf.cycle();
+}
+
+public boolean hasNegativeCycle() {
+    return cycle != null;
+}
+
+public Iterable<Edge> negativeCycle() {
+    return cycle;
+}
+```
+
+实现用到了之前课程里检测环的类，详细的参见：[BellmanFordSP.java](https://algs4.cs.princeton.edu/44sp/BellmanFordSP.java.html)，或是 [booksite-4.4](https://algs4.cs.princeton.edu/44sp/)，不提。
+
+#### Application
+
+负权重环检测可以被应用于套汇。
+
+![arbitrage](https://images2018.cnblogs.com/blog/886021/201806/886021-20180622183601400-1609904020.png)
+
+1000 美元可以换 741 欧元，后者再换成 1012.206 = 741 $\times$ 1.366 加元，加元再换回美元变成 1012.206 $\times$ 0.995 = 1007.14497，也就赚了 7.14497 美元。
+
+在这样的图里寻找权重乘积（$w_{1}w_{2}...w_{k}$）大于 1 的路径，等价于 -ln($w_{1}$)-ln($w_{2}$)-...-ln($w_{k}$) 小于零，于是我们把权重取对数再取反，找到的负权重环即目标路径。
