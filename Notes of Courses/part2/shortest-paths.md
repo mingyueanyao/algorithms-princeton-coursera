@@ -277,7 +277,7 @@ public class DijkstraSP {
 
 ## Edge-weighted DAGs
 
-对于带权无环有向图（DAG）我们有比 Dijkstra 更简单的算法：按图的拓扑排序来放松点，它能在线性时间内计算 SPT，能在处理负权重，还可以用来找出最长路径。
+对于带权无环有向图（DAG）我们有比 Dijkstra 更简单的算法：按图的拓扑排序来放松点，它能在线性时间内计算 SPT，能处理负权重，还可以用来找出最长路径。
 
 ![edge-weighted-dag-easy-spt](https://images2018.cnblogs.com/blog/886021/201806/886021-20180621214002156-1467545301.png)
 

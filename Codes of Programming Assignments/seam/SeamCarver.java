@@ -15,7 +15,6 @@ public class SeamCarver {
         pictureCopy = new Picture(picture);
         width = picture.width();
         height = picture.height();
-
     }               
 
     // current picture
@@ -44,21 +43,27 @@ public class SeamCarver {
             return 1000;
         }
 
-        Color up, down, left, right;
-        up = pictureCopy.get(x, y - 1);
-        down = pictureCopy.get(x, y + 1);
-        left = pictureCopy.get(x - 1, y);
-        right = pictureCopy.get(x + 1, y);
+        int up, down, left, right;
+        up = pictureCopy.getRGB(x, y - 1);
+        down = pictureCopy.getRGB(x, y + 1);
+        left = pictureCopy.getRGB(x - 1, y);
+        right = pictureCopy.getRGB(x + 1, y);
         double gradientY = gradient(up, down);
         double gradientX = gradient(left, right);
 
         return Math.sqrt(gradientX + gradientY);
     }
     
-    private double gradient(Color p1, Color p2) {
-        return Math.pow(p1.getRed() - p2.getRed(), 2) 
-            + Math.pow(p1.getGreen() - p2.getGreen(), 2) 
-            + Math.pow(p1.getBlue() - p2.getBlue(), 2);
+    private double gradient(int rgb1, int rgb2) {
+        int r1 = (rgb1 >> 16) & 0xFF;
+        int g1 = (rgb1 >>  8) & 0xFF;
+        int b1 = (rgb1 >>  0) & 0xFF;
+        int r2 = (rgb2 >> 16) & 0xFF;
+        int g2 = (rgb2 >>  8) & 0xFF;
+        int b2 = (rgb2 >>  0) & 0xFF;
+        
+        return Math.pow(r1 - r2, 2) + Math.pow(g1 - g2, 2) 
+            + Math.pow(b1 - b2, 2);
     }
     
     /*
