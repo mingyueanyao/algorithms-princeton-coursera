@@ -1,7 +1,4 @@
-import java.awt.Color;
 import edu.princeton.cs.algs4.Picture;
-
-import edu.princeton.cs.algs4.StdOut;
 
 public class SeamCarver {
     private int width;
@@ -21,7 +18,7 @@ public class SeamCarver {
 
     // current picture
     public Picture picture() {
-        return pictureCopy;
+        return new Picture(pictureCopy);
     }  
 
     // width of current picture
@@ -135,7 +132,6 @@ public class SeamCarver {
         transpose();
         int[] hSeam = findVerticalSeam();
         transpose();
-        pictureCopy.show();
         return hSeam;
     }   
 
@@ -179,7 +175,7 @@ public class SeamCarver {
         if (height <= 1) {
             throw new IllegalArgumentException("the height of the picture is less than or equal to 1\n");
         }
-        
+
         transpose();
         removeVerticalSeam(seam);
         transpose();
@@ -220,28 +216,5 @@ public class SeamCarver {
                 throw new IllegalArgumentException("two adjacent entries differ by more than 1 in seam\n"); 
             }
         }
-    }
-
-    /*
-    / test
-    public double energy_test(int x, int y) {
-        return energy[x][y];
-    }
-    */
-
-    public static void main(String[] args) {
-        Picture picture = new Picture(args[0]);
-        StdOut.printf("image is %d pixels wide by %d pixels high.\n", picture.width(), picture.height());
-        
-        SeamCarver sc = new SeamCarver(picture);
-        sc.findHorizontalSeam();
-        
-        /*StdOut.printf("Printing energy calculated for each pixel.\n");        
-
-        for (int row = 0; row < sc.height(); row++) {
-            for (int col = 0; col < sc.width(); col++)
-                StdOut.printf("%9.2f ", sc.energy_test(col, row));
-            StdOut.println();
-        }*/
     }
 }
