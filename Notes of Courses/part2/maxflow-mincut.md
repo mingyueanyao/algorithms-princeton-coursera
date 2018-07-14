@@ -83,6 +83,192 @@ $\sum\limits_{u\in A, v\in B}f_{uv}i_{uv} - \sum\limits_{u\in B, v\in A}f_{uv}i_
 
 ## Running Time Analysis
 
+我们考虑边的容量都是整数的流量网络。
+
+- 对这样的流量网络，Ford-Fulkerson 方法计算的流是整数。
+
+    边的容量都是整数，限制的瓶颈容量自然也是整数，而边上的流都是加减瓶颈容量得到的，最终还是整数。
+
+- 增广路径的数目小于最大流的值。
+
+    因为每条增广路径至少会把网络总流量增加 1。
+
+- **Integrality theorem:** 完整性，这样的网络存在着整数值的最大流。
+
+    整数网络增广路径的数目是有限的，FF 算法肯定会终止，计算出那个最大流。
+
+**附：** [FF 算法无法终止的样例](https://zh.wikipedia.org/wiki/Ford%E2%80%93Fulkerson%E7%AE%97%E6%B3%95#无法终止算法的样例)，我是看不大懂其实，这里也不深究。
+
+就算是整数网络，增广路径最坏情况下也会等于最大流的值，像下面的例子：
+
+![ff-bad-case](https://images2018.cnblogs.com/blog/886021/201807/886021-20180714155303215-680521516.png)
+
+上面两条路径一直交替，要两百次才能算出最大流。我们可以改变增广路径的搜索策略来避免这种情况，像是最短路径法（BFS），或是最大容量路径法等：
+
+![ff-path](https://images2018.cnblogs.com/blog/886021/201807/886021-20180714155734962-549988764.png)
+
+不同搜索策略下增广路径数的上限如下：
+
+![ff-path-numbers](https://images2018.cnblogs.com/blog/886021/201807/886021-20180714155847421-2117014204.png)
+
+这些都是很保守的值，实际使用中基本上不会达到这种数量。
+
 ## Java Implementation
+
+### Residual Network
+
+流量网络的边既有容量又有流量，势必需要新的数据类型来表示边，同时网络本身也有一种有用的其它表示，称为**剩余网络**（**residual network**）。
+
+![residual-network](https://images2018.cnblogs.com/blog/886021/201807/886021-20180714164851187-517444210.png)
+
+流量网络边的流量在剩余网络中为反向的同等权重的边，若边未饱和，则剩余网络中还有同向的剩余流量权重边。这样表示的好处在于：流量网络中的增广路径在剩余网络中变为有向路径，会让我们的代码更加简洁优雅。
+
+### Flow Edge
+
+```java
+public class FlowEdge {
+    private final int v, w;           // from and to
+    private final double capacity;
+    private double flow;
+
+    // create a flow edge v->w
+    public FlowEdge(int v, int w, double capacity) {
+        this.v = v;
+        this.w = w;
+        this.capacity = capacity;
+    }
+
+    public int from() {
+        return v;
+    }
+
+    public int to() {
+        return w;
+    }
+
+    public double capacity() {
+        return capacity;
+    }
+
+    public double flow() {
+        return flow;
+    }
+
+    // other endpoint
+    public int other(int vertex) {
+        if (vertex == v) return w;
+        else if (vertex == w) return v;
+    }
+
+    // residual capacity toward v
+    public double residualCapacityTo(int vertex) {
+        // backward edge
+        if (vertex == v) return flow;
+        // forward edge
+        else if (vertex == w) return capacity - flow;
+    }
+
+    // add delta flow toward v
+    public void addResidualFlowTo(int vertex, double delta) {
+        // backward edge
+        if (vertex == v) flow -= delta;
+        // forward edge
+        else if (vertex == w) flow += delta;
+    }
+}
+```
+
+对于正向边来说，它的剩余流量即容量减去流量，而反向边则是流量，实际上就是增加网络总流量的潜力值。
+
+### Flow NetWork
+
+```java
+public class FlowNetwork {
+    private final int V;
+    private Bag<FlowEdge>[] adj;
+
+    public FlowNetwork(int V) {
+        this.V = V;
+        adj = (Bag<FlowEdge>[]) new Bag[V];
+        for (int v = 0; v < V; v++)
+            adj[v] = new Bag<FlowEdge>();
+    }
+
+    public void addEdge(FlowEdge e) {
+        int v = e.from();
+        int w = e.to();
+        adj[v].add(e);    // add forward edge
+        adj[w].add(e);    // add backward edge
+    }
+
+    public Iterable<FlowEdge> adj(int v) {
+        return adj[v];
+    }
+}
+```
+
+依然是邻接表，当做无向图来存，既有正向情况，又有反向情况，但实际边对象只有一个。
+
+![flow-network-representation](https://images2018.cnblogs.com/blog/886021/201807/886021-20180714164910478-676454143.png)
+
+### Ford-Fulkerson
+
+```java
+public class FordFulkerson {
+    private boolean[] marked;     // true if s->v path in residual network
+    private FlowEdge[] edgeTo;    // last edge on s->v path
+    private double value;         // value of flow
+
+    public double value() {
+        return value;
+    }
+
+    // is v reachable from s in residual network?
+    public boolean inCut(int v) {
+        return marked[v];
+    }
+
+    public FordFulkerson(FlowNetwork G, int s, int v) {
+        value = 0.0;
+        while (hasAugmentingPath(G, s, t)) {
+            // compute bottlenack capacity
+            double bottle = Double.POSITIVE_INIINITY;
+            for (int v = t; v != s; v = edgeTo[v].other(v))
+                bottle = Math.min(bottle, edgeTo[v].residualCapacityTo(v));
+
+            for (int v = t; v != s; v = edgeTo[v].other(v))
+                edgeTo[v].addResidualFlowTo(v, bottle);
+
+            value += bottle;
+        }
+    }
+
+    private boolean hasAugmentingPath(FlowNetwork G, int s, int t) {
+        edgeTo = new FlowEdge[G.V()];
+        marked = new boolean[G.V()];
+
+        Queue<Integer> queue = new Queue<Integer>();
+        queue.enqueue(s);
+        marked[s] = true;
+        // BFS
+        while (!queue.isEmpty()) {
+            int v = queue.dequeue();
+            for (FlowEdge e : G.adj(v)) {
+                int w = e.other(v);
+                // found path from s to w i the residual network?
+                if (e.residualCapacityTo(w) > 0 && !marked[w]) {
+                    edgeTo[w] = e;
+                    marked[w] = true;
+                    queue.enqueue(w);
+                }
+            }
+        }
+
+        return marked[t];
+    }
+}
+```
+
+**注：** 上面贴出来的只是关键部分，完整的在 [boosite-6.4](https://algs4.cs.princeton.edu/64maxflow/) 可以找到。
 
 ## Applications
