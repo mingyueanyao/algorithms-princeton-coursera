@@ -272,3 +272,19 @@ public class FordFulkerson {
 **注：** 上面贴出来的只是关键部分，完整的在 [boosite-6.4](https://algs4.cs.princeton.edu/64maxflow/) 可以找到。
 
 ## Applications
+
+最大流模型有着广泛的应用，比如说二分匹配（**bipartite matching**）问题。
+
+假设有 N 个学生从总共 N 个的公司收到了一些 offer，每个公司只收一人，怎样每个学生都能有工作呢。
+
+![maxflow-application-bipartite-1](https://images2018.cnblogs.com/blog/886021/201807/886021-20180715150230545-1060332069.png)
+
+最大流模型就可以帮我们找到完美匹配。像下图那般构造流量网络，s 点到学生的边容量为 1，公司到 t 点的边容量也为 1，学生与公司之间的边容量则没有限制。存在完美匹配的话，FF 算法找到的最大流的值即为 N。
+
+![maxflow-application-bipartite-2](https://images2018.cnblogs.com/blog/886021/201807/886021-20180715150251940-501118335.png)
+
+也有可能不存在完美匹配：设想学生中有个集合 S 只收到了公司集合 T 中的 offer，要是前者大于后者，自然无法一一匹配。此时，最小割也可以帮我们找到相应的集合 S 和集合 T。
+
+![maxflow-application-bipartite-3](https://images2018.cnblogs.com/blog/886021/201807/886021-20180715150307430-2065699398.png)
+
+最大流模型还有很多很多其它应用，相应的研究还在进行，有个篮球淘汰赛方面的应用会在编程作业里再说，这里就不讲啦。
