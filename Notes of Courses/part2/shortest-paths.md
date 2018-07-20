@@ -33,7 +33,7 @@ public class DirectedEdge {
         return w;
     }
 
-    publiv int weight() {
+    public int weight() {
         return weight;
     }
 }
@@ -54,7 +54,7 @@ public class DirectedEdge {
 ```java
 public class EdgeWeightedDigraph {
     private final int V;
-    private final Bag<DirectedEdge>[] adjl
+    private final Bag<DirectedEdge>[] adj;
 
     public EdgeWeightedDigraph(int V) {
         this.V = V;
@@ -63,7 +63,7 @@ public class EdgeWeightedDigraph {
             adj[v] = new Bag<DirectedEdge>();
     }
 
-    publiv void addEdge(DirectedEdge e) {
+    public void addEdge(DirectedEdge e) {
         int v = e.from();
         adj[v].add(e);
     }
@@ -125,7 +125,7 @@ public Iterable<DirectedEdge> pathTo(int V) {
 
 #### Edge
 
-放松边 v->w 就是要检查源点 s 到点 w 经过这条边是否会更短。
+放松边 e:v->w 就是要检查源点 s 到点 w 经过这条边是否会更短。
 
 ```java
 private void relax(DirectedEdge e) {
