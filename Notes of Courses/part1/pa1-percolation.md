@@ -2,7 +2,7 @@
 
 作业链接：[Percolation](http://coursera.cs.princeton.edu/algs4/assignments/percolation.html) & [Checklist](http://coursera.cs.princeton.edu/algs4/checklists/percolation.html)
 
-我的代码：[Percolation.java](https://github.com/mingyueanyao/algorithms-princeton-coursera/blob/master/Codes%20of%20Programming%20Assignments/percolation/Percolation.java) & [PercolationStats.java](https://github.com/mingyueanyao/algorithms-princeton-coursera/blob/master/Codes%20of%20Programming%20Assignments/percolation/PercolationStats.java)
+我的代码：[Percolation.java](https://github.com/mingyueanyao/algorithms-princeton-coursera/blob/master/Codes%20of%20Programming%20Assignments/part1/pa1-percolation/Percolation.java) & [PercolationStats.java](https://github.com/mingyueanyao/algorithms-princeton-coursera/blob/master/Codes%20of%20Programming%20Assignments/part1/pa1-percolation/PercolationStats.java)
 
 编程解决上篇博客 [Union-Find](https://www.cnblogs.com/mingyueanyao/p/8583941.html) 最后提到的渗透问题（Percolation），写个电脑程序来估计阈值 p* 。
 

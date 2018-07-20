@@ -2,7 +2,7 @@
 
 作业链接：[Seam Carving](http://coursera.cs.princeton.edu/algs4/assignments/seam.html) & [Checklist](http://coursera.cs.princeton.edu/algs4/checklists/seam.html)
 
-我的代码：[SeamCarver.java](https://github.com/mingyueanyao/algorithms-princeton-coursera/blob/master/Codes%20of%20Programming%20Assignments/seam/SeamCarver.java)
+我的代码：[SeamCarver.java](https://github.com/mingyueanyao/algorithms-princeton-coursera/blob/master/Codes%20of%20Programming%20Assignments/part2/pa2-seam/SeamCarver.java)
 
 ## 问题简介
 
@@ -33,13 +33,13 @@ Seam Carving 则可以达到下图的效果。
 >public class SeamCarver {
 >    public SeamCarver(Picture picture)                // create a seam carver object based on the given picture
 >    public Picture picture()                          // current picture
->    public     int width()                            // width of current picture
->    public     int height()                           // height of current picture
->    public  double energy(int x, int y)               // energy of pixel at column x and row y
->    public   int[] findHorizontalSeam()               // sequence of indices for horizontal seam
->    public   int[] findVerticalSeam()                 // sequence of indices for vertical seam
->    public    void removeHorizontalSeam(int[] seam)   // remove horizontal seam from current picture
->    public    void removeVerticalSeam(int[] seam)     // remove vertical seam from current picture
+>    public int width()                            // width of current picture
+>    public int height()                           // height of current picture
+>    public double energy(int x, int y)               // energy of pixel at column x and row y
+>    public int[] findHorizontalSeam()               // sequence of indices for horizontal seam
+>    public int[] findVerticalSeam()                 // sequence of indices for vertical seam
+>    public void removeHorizontalSeam(int[] seam)   // remove horizontal seam from current picture
+>    public void removeVerticalSeam(int[] seam)     // remove vertical seam from current picture
 >}
 >```
 
@@ -47,7 +47,7 @@ Seam Carving 则可以达到下图的效果。
 
 **PS:**
 
-原本注释较长会跑到下一行，看着很难受，而 Github 默认会有横向滚动条，于是为实现这个滚动条折腾了好久，一度跑偏，未果。最终是直接查看博客页面的审查元素，在博客园设置里的”页面定制 CSS 代码“添加一行代码 `pre {white-space: pre;}`即可。。。
+原本注释较长会跑到下一行，看着很难受，而 Github 默认会有横向滚动条，于是为实现这个滚动条折腾了好久，一度跑偏，未果。最终是直接查看博客页面的审查元素，在博客园设置里的”页面定制 CSS 代码“添加一行代码 `pre {white-space: pre;}` 即可。。。
 
 ## 问题分析
 
