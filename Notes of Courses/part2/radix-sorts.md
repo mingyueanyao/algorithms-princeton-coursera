@@ -70,7 +70,104 @@ for (int i = 0; i < N; i++)
 
 ## LSD Radix Sort
 
+低位优先（Least Significant digit first）的基数排序，可以对等长的字符串进行排序。这样的应用挺常见，像电话号码，车牌号等等。你需要做的是从右到左，分别对每个位置的字符进行基数排序，像下面的例图那样：
+
+![LSD](https://images2018.cnblogs.com/blog/886021/201807/886021-20180723155344760-2032525065.png)
+
+因为基数排序是稳定的，相同键之间的相对顺序不会改变，所以第 i + 1 次排完之后，i + 1 位有相同键的字符串的前面 i 位间的相对顺序是不会变的，仍然有序。
+
+### LSD: Java Implementation
+
+```java
+public class LSD {
+    // fixed-length W strings
+    public static void sort(String[] a, int W) {
+        int R = 256;    // radix R
+        int N = a.length;
+        String[] aux = new String[N];
+
+        // do key-indexed couting
+        // for each digit from right to left
+        for (int d = W - 1; d >= 0; d--) {
+            int[] count = new int[R + 1];
+            // key-indexed counting
+            for (int i = 0; i < N; i++)
+                count[a[i].charAt(d) + 1]++;
+            for (int r = 0; r < R; r++)
+                count[r + 1] += count[r];
+            for (int i = 0; i < N; i++)
+                aux[count[a[i].charAt(d)]++] = a[i];
+            for (int i = 0; i < N; i++)
+                a[i] = aux[i];
+        }
+    }
+}
+```
+
+对于典型的应用，R（基数）远小于 N（总数），对定长（W）的字符串排序的时间是 $MN$ 级别。
+
 ## MSD Radix Sort
+
+高位优先（Most Significant Digit First）的基数排序，能对长度不同的字符串进行排序。对最高位的字符使用基数排序，然后再递归地对子字符串们使用基数排序：
+
+![MSD](https://images2018.cnblogs.com/blog/886021/201807/886021-20180723172529187-913394612.png)
+
+这些字符串可以不是定长的，我们要约定一下的字符串的末尾。这里用私有方法 charAt() 在字符串的末尾加个 -1，这样下一轮的基数排序中它也不会改变位置。C 语言中字符串以 ‘\0’ 结尾，需要注意对代码做些调整。
+
+```java
+private static int charAt(String s, int d) {
+    if (d < s.length) return s.charAt(d);
+    else return -1;
+}
+```
+
+### MSD: Java Implementation
+
+于是相当于现在多了个键 -1，所以 conut 数组的大小为 R + 2。
+
+```java
+public static void sort(String[] a) {
+    aux = new String[a.length];
+    sort(a, aux, 0, a.length - 1, 0);
+}
+
+private static void sort(String[] a, String[] aux, int lo, int hi, int d) {
+    if (hi <= lo) return;
+    int[] count = new int[R + 2];
+    for (int i = lo; i <= hi; i++)
+        count[charAt(a[i], d) + 2]++;
+    for (int r = 0; r < R + 1; r++)
+        count[r + 1] += count[r];
+    for (int i = lo; i <= h; i++)
+        aux[count[charAt(a[i], d) + 1]++] = a[i];
+    for (int i = lo; i <= hi; i++)
+        a[i] = aux[i -lo];
+
+    // sort R subarrays recursively
+    for (int r = 0; r < R; r++)
+        sort(a, aux, lo + count[r], lo + count[r + 1] - 1, d + 1);
+}
+```
+
+用于回写的辅助数组 aux 可以重复使用，但是每次基数排序都需要新的 count[R + 2]，不仅需要空间，而且默认的初始化也需要时间。于是，类似的，对于小型子数组，我们使用插入排序来改进算法。
+
+```java
+public static void sort(String[] a, int lo, int hi, int d) {
+    for (int i = lo; i <= hi; i++)
+        for (int j = i; j > lo && less(a[j], a[j - 1], d); j--)
+            exch(a, j, j -1);
+}
+
+private static boolean less(String v, String w, int d) {
+    return v.substring(d).compareTo(w.substring(d)) < 0;
+}
+```
+
+MSD 算法的性能取决于输入的数据，最坏的情况的下需要检查所有的字符，和 LSD 一样是线性时间级别。
+
+![MSD-performence](https://images2018.cnblogs.com/blog/886021/201807/886021-20180723204033182-1142104535.png)
+
+
 
 ## 3-way Radix Quicksort
 
