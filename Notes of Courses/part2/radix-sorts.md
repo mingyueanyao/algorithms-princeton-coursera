@@ -167,8 +167,97 @@ MSD 算法的性能取决于输入的数据，最坏的情况的下需要检查�
 
 ![MSD-performence](https://images2018.cnblogs.com/blog/886021/201807/886021-20180723204033182-1142104535.png)
 
-
-
 ## 3-way Radix Quicksort
 
+三向字符串快速排序算法结合了 MSD 和快排，改进了快速排序处理字符串时的性能。当两个字符串有很长的相同前缀时，不需要重复扫描很多字符，也不像 MSD 因为辅助数组而需要很多额外空间。
+
+具体来说，算法每次根据第一个字符串的首字母将数组三向切分成小于，等于和大于首字母的三个子数组，然后再递归地对这些子数组三向切分。其中，首字母相等的子数组用第一个字符串的第二个字母来三向切分，因为首字母都一样，同时也避免了原来快排的重复扫描。例图：
+
+![3-way-radix-quicksort](https://images2018.cnblogs.com/blog/886021/201807/886021-20180724163107802-1133643500.png)
+
+### 3-way String Quicksort: Java Implementation
+
+```java
+private static void sort(String[] a) {
+    sort(a, 0, a.length - 1, 0);
+}
+
+private static void sort(String[] a, int lo, int hi, int d) {
+    if (hi <= lo) return;
+    int lt = lo, gt = hi;
+    int v = charAt(a[lo], d);    // 约定字符串末尾返回 -1
+    int i = lo + 1;
+    while (i <= gt) {
+        int t = charAt(a[i], d);
+        if (t < v) exch(a, lt++, i++);
+        else if (t > v) exch(a, i, gt--);
+        else i++;
+    }
+
+    sort(a, lo, lt - 1, d);
+    if (v >=0) sort(a, lt, gt, d + 1);    // 用第二个字母三向切分
+    sort(a, gt + 1, hi, d);
+}
+```
+
 ## Suffix Arrays
+
+后缀数组包括字符串的所有后缀，有很多应用，比如说可以用于关键字查找，最长重复子字符串等。
+
+因为 Java 中子字符串共享原来的字符数组，所以构建输入字符串的后缀数组只需要线性级别的时间和空间。
+
+```java
+public static String[] suffixes(String s) {
+    int N = s.length();
+    String[] suffixes = new String[N];
+    for (int i = 0; i < N; i++)
+        suffixes[i] = s.substring(i, N);
+    return suffixes;
+}
+```
+
+对后缀数组进行排序，就能把相同的字符串安排在一起，查找关键字也就快了很多。
+
+![suffix-arrays-1](https://images2018.cnblogs.com/blog/886021/201807/886021-20180727212115060-421776584.png)
+
+最长重复子字符串也差不多。
+
+![suffix-arrays-2](https://images2018.cnblogs.com/blog/886021/201807/886021-20180727212127781-214870736.png)
+
+### LRS: Java Implementation
+
+```java
+public String lrs(String s) {
+    int N = s.length();
+
+    String[] suffixes = new String[N];
+    for (int i = 0; i < N; i++)
+        suffixes[i] =s.substring(i, N);
+
+    Arrays.sort(suffixes);
+
+    tring lrs = "";
+    for (int i = 0; i < N - 1; i++) {
+        // compute longest common prefix
+        // between adjacent suffixes insorted order
+        int len = lcp(suffixes[i], suffixes[i + 1]);
+        if (len > lrs.length())
+           lrs = suffixes[i].substring(0, len);
+    }
+    return lrs;
+}
+```
+
+不过，最坏情况下，它可能达到平方级别的复杂度。
+
+![suffix-arrays-2.1](https://images2018.cnblogs.com/blog/886021/201807/886021-20180727215437236-647733087.png)
+
+输入的字符串重复时，需要进行很多次比较才能完成排序。于是乎我们来了解一下 Manber-Myer MSD 算法。
+
+![suffix-arrays-3.0](https://images2018.cnblogs.com/blog/886021/201807/886021-20180727230425318-412318990.png)
+
+它和普通的 MSD 从左到右一位位排序不同，每次排好的位数是**倍增**的，像上面排好了前四位，下一轮就能按前八位排好后缀数组。大概的原理，举例来说看字符串 0 和字符串 9，它们有相同的前四位，前者的后四位和字符串 4 的前四位一样，后者的后四位和字符串 13 的前四位一样。而按前四位排序，字符串 13 在字符串 4前面，所以下一次按八位排，字符串 0 应该排在字符串 9 的前面。
+
+![suffix-arrays-3.1](https://images2018.cnblogs.com/blog/886021/201807/886021-20180727225949933-1319664522.png)
+
+大概是这么个过程吧，了解一下，具体实现的细节没提。
