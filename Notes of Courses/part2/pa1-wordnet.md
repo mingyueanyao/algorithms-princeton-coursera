@@ -2,7 +2,7 @@
 
 作业链接：[WordNet](http://coursera.cs.princeton.edu/algs4/assignments/wordnet.html) & [Checklist](http://coursera.cs.princeton.edu/algs4/checklists/wordnet.html)
 
-我的代码：[WordNet.java](https://github.com/mingyueanyao/algorithms-princeton-coursera/blob/master/Codes%20of%20Programming%20Assignments/wordnet/WordNet.java) & [SAP.java](https://github.com/mingyueanyao/algorithms-princeton-coursera/blob/master/Codes%20of%20Programming%20Assignments/wordnet/SAP.java) & [Outcast.java](https://github.com/mingyueanyao/algorithms-princeton-coursera/blob/master/Codes%20of%20Programming%20Assignments/wordnet/Outcast.java)
+我的代码：[WordNet.java](https://github.com/mingyueanyao/algorithms-princeton-coursera/blob/master/Codes%20of%20Programming%20Assignments/part2/pa1-wordnet/WordNet.java) & [SAP.java](https://github.com/mingyueanyao/algorithms-princeton-coursera/blob/master/Codes%20of%20Programming%20Assignments/part2/pa1-wordnet/SAP.java) & [Outcast.java](https://github.com/mingyueanyao/algorithms-princeton-coursera/blob/master/Codes%20of%20Programming%20Assignments/part2/pa1-wordnet/Outcast.java)
 
 这是第二部分的编程作业，因为第二部分课程开始了，第一部分博客就先放放。
 
