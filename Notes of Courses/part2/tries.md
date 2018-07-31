@@ -102,4 +102,82 @@ public class TriesST<Value> {
 
 ## Ternary Search Tries
 
+R 路单词查找树每个节点的空链接数太多，会占用大量的空间，于是我们来了解下三向单词查找树。
+
+三向单词查找树（TST）每个节点只有左中右三个链接，节点里存的还是单个字符，查找时比节点字符小走左边，相等走中间，大于走右边。例图：
+
+![tst](https://images2018.cnblogs.com/blog/886021/201807/886021-20180730211441659-95166443.png)
+
+### TST: search
+
+查找时和节点存的字符匹配就走中间，比它大走左边，比它小走右边。这个过程中碰到空链接就说明没有该字符串，或是字符串最后一个字符所在的节点没有值，那就也没有该字符串。
+
+#### Search Hit
+
+![search-hit](https://images2018.cnblogs.com/blog/886021/201807/886021-20180730211506602-375999085.png)
+
+#### Search Miss
+
+![search-miss](https://images2018.cnblogs.com/blog/886021/201807/886021-20180730211528212-1201032753.png)
+
+### TST: construction
+
+构造（插入新字符串）TST 和查找类似，只是碰到空链接就新建个节点，字符串最后一个字符所到节点给它赋值。
+
+### TST: Java implementation
+
+```java
+public class TST<Value> {
+    private Node root;
+
+    private class Node {
+        private Value val;
+        private char c;
+        private Node left, mid, right;
+    }
+
+    public void put(String key, Value val) {
+        root = put(root, key, val, 0);
+    }
+
+    private Node put(Node x, String key, Value val, int d) {
+        char c = key.charAt(d);
+        if (x == null) {
+            x = new Node();
+            x.c = c;
+        }
+        if (c < x.c) x.left = put(x.left, key, val, d);
+        else if (c > x.c) x.right = put(x.right, key, val, d);
+        else if (d < key.length() - 1) x.mid = put(x.mid, key, val, d + 1);
+        else x.val = val;
+        return x;
+    }
+
+    public boolean contains(String key) {
+        return get(key) != null;
+    }
+
+    public Value get(String key) {
+        Node x = get(root, key, 0);
+        if (x == null) return null;
+        return x.val;
+    }
+
+    private Node get(Node x, String key, int d) {
+        if (x == null) return null;
+        char c = key.charAt(d);
+        if (c < x.c) return get(x.left, key, d);
+        else if (c > x.c) return get(x.right, key, d);
+        else if (d < key.length() - 1) return get(x.mid, key, d + 1);
+        else return x;
+    }
+}
+```
+
+TST 的复杂度和红黑树相当，查找的效率和哈希实现的符号表差不多。你也可以通过旋转操作保持它的平衡，来保证最坏情况下的性能。还可以把它和 R-way tries 结合起来：
+
+![tst-r2](https://images2018.cnblogs.com/blog/886021/201807/886021-20180731115403647-1725352123.png)
+
+虽然空间上会多花一点，但是实际中会让算法跑得更快一些，因为前面两个字符很快就能判断有没有匹配的，可能直接就是 search miss 的情况。
+
 ## Character-based Operations
