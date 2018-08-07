@@ -152,4 +152,146 @@ public KMP(String pat) {
 
 ## Boyer-Moore
 
+Boyer-Moore 算法采用启发式（heuritic）的方法处理不匹配的字符，**从右向左**扫描模式字符串（长度为 M）并将它和文本匹配，不匹配的时候最多可以跳过 M 个文本中的字符，在实际应用中近似能达到 $N/M$ 级别。例子：
+
+![boyer-moore](https://images2018.cnblogs.com/blog/886021/201808/886021-20180807155156823-731961647.png)
+
+第一次文本中的 N 和模式中的 E 不匹配，因为模式串中含有 N，所以将模式中最右边的 N 和其对齐，模式一下就向右移动了 5 位。第二次不匹配时，因为模式串中没有 S，更是直接将模式串移动了 6 位（即 M 位）。最终找到匹配的位置总共也只比较了四次，还有另外六次用来验证匹配。
+
+因为实际中模式串经常只包含字母表中一些字符，在文本中查找的时候经常碰到模式串中没有的字符，所以几乎全部都是这种跳过 M 位的，故近似有 $N/M$ 级别。
+
+于是关键就在于：**移动几位**，具体可以分为以下三种情况：
+
+1. 不匹配字符不在模式串中。
+
+   ![case1](https://images2018.cnblogs.com/blog/886021/201808/886021-20180807155208268-1534090778.png)
+
+    这是最简单的情况，直接移动 M 位。
+
+2. 不匹配字符在模式串中，情形一。
+
+    ![case2a](https://images2018.cnblogs.com/blog/886021/201808/886021-20180807155219963-1234566176.png)
+
+    将模式串中最右边的该字符和文本中的对齐。
+
+3. 不匹配字符在模式串中，情形二。
+
+   ![case2b](https://images2018.cnblogs.com/blog/886021/201808/886021-20180807155231872-1603398898.png)
+
+   这时要是按上面和最右边的对齐，模式串会往左边移动发生回退，移动位数是负数。所以这时没办法跳过很多字符，只能老实地右移一位。
+
+具体的实现时，对模式串进行下预处理，维护一个数组 right[R] 来指导跳过几位就好。
+
+```java
+rigth = new int[R];
+for (int c = 0; c < R; c++)
+    right[c] = -1;    // 模式串中没有该字符则记为 -1
+for (int j = 0; j < M; j++)
+    right[pat.charAt(j)] = j;
+```
+
+### Boyer-Moore: Java Implementation
+
+```java
+public int search(String txt) {
+    int N = txt.length();
+    int M = pat.length();
+    int skip;
+    for (int i = 0; i <= N - M; i += skip) {
+        skip = 0;
+        for (int j = M - 1; j >= 0; j--) {
+            if (pat.charAt(j) != txt.charAt(i + j)) {
+                // in case other term is nonpositive
+                skip = Math.max(1, j - right[txt.charAt(i + j)]);
+            }
+        }
+        if (skip == 0) return i;    // match
+    }
+    return N;
+}
+```
+
+最坏的情况下，Boyer-Moore 算法会退化到近似 $MN$ 的级别，就是都是最后一种情形，每次只能移动一位。
+
+![worst-case](https://images2018.cnblogs.com/blog/886021/201808/886021-20180807155249405-2147054164.png)
+
+完整的 Boyer-Moore 算法和 KMP 算法类似有个记录不匹配时的重启位置的数组，能给最坏情况提供线性级别的性能保证，跳过的位数也可能不止 M 位。不过对一般的应用程序，启发式的处理不匹配字符已经足够了，所以不展开，据说就是从模式串右边开始构造 DFA。
+
 ## Rabin-Karp
+
+Rabin-Karp 指纹字符串查找算法基于模数（modular）散列，直接上图：
+
+![rabin-krap](https://images2018.cnblogs.com/blog/886021/201808/886021-20180807170836038-1935863578.png)
+
+我们用的散列函数如下：
+
+$x_{i} = c_{i}R^{M - 1} + c_{i + 1}R^{M - 2} + ... + c_{i + M - 1}R^{0}$ (mod Q)
+
+$c_{i}$ 表示第 i 位的字符，Q 就是一个很大的素数（也要注意不要溢出）。然后再用 **Horner** 方法（霍尔法则计算 n 次多项式）在线性时间内计算出来：
+
+```java
+// Compute hash for M-digit key
+private long hash(String key, int M) {
+    long h = 0;
+    for (int j = 0; j < M; j++)
+        h = (R * h + key.charAt(j)) % Q;
+    return h;
+}
+```
+
+上面的方法模式串和文本都能用，但每次计算文本的子串的散列需要访问 M 个字符，那和暴力算法不都是近似 $MN$ 级别。Rabin-Karp 算法的关键就在于它能够在线性时间内算出文本子串的散列值，只要稍微预处理一下。
+
+考虑下如何在已知 $x_{i}$ 的情况下高效地算出 $x_{i + 1}$，写出式子：
+
+$x_{i} = c_{i}R^{M - 1} + c_{i + 1}R^{M - 2} + ... + c_{i + M - 1}R^{0}$
+
+$x_{i + 1} = c_{i + 1}R^{M - 1} + c_{i + 2}R^{M - 2} + ... + c_{i + M}R^{0}$
+
+不难推出：
+
+$x_{i + 1} = (x_{i} - t_{i}R^{M - 1}) R + t_{i + M}$
+
+可以先把 $R^{M - 1}$ 算好，例子：
+
+![quick-txt-hash](https://images2018.cnblogs.com/blog/886021/201808/886021-20180807170850845-116182600.png)
+
+### Rabin-Krap: Java Implementation
+
+```java
+public class RabinKrap {
+    private long patHash;    // pattern hash value
+    private int M;           // pattern length
+    private long Q;          // modulus
+    private int R;           // radix
+    private long RM;         // R^(M-1) % Q
+
+    public RabinKrap(String pat) {
+        R = 256;
+        M = pat.length();
+        patHash = hash(pat, M);
+        // a large prime
+        // but avoid overflow
+        Q = longRandomPrime();
+
+        RM = 1;
+        for (int i = 1; i <= M -1; i++)
+            RM = (R * RM) % Q;
+    }
+
+    public int search(String txt) {
+        int N = txt.length();
+        int txtHash = hash(txt, M);
+        if (patHash == txtHash) return 0;
+        for (int i = M; i < N; i++) {
+            txtHash = (txtHash + Q - RM * txt.charAt(i - M) % Q) % Q;
+            txtHash = (txtHash * R + txt.charAt(i)) % Q;
+            if (patHash == txtHash) return i - M + 1;    // Monte Carlo version
+        }
+        return N;    // not found
+    }
+}
+```
+
+蒙特卡洛版本在散列匹配时直接返回，因为散列表的规模 Q 很大，冲突概率很小，这样可以保证运行时间。另有拉斯维加斯（Las Vegas）版本散列值匹配后还会回退比较字符，以此来保证正确性，但可能会很慢。
+
+Rabin-Karp 算法的优点是容易拓展，像是拓展到查找多模式，查找二维模式等，缺点是算术运算会比其它算法的字符比较慢等。
