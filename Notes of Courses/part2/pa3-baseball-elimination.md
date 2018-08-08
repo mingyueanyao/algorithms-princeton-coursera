@@ -99,4 +99,3 @@ i  team         wins loss left   NY Bal Bos Tor Det
 ## 测试结果
 
 ![part2-pa3-final-result](https://images2018.cnblogs.com/blog/886021/201807/886021-20180720110759118-1834091475.png)
-
