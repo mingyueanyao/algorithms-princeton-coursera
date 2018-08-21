@@ -176,3 +176,5 @@ private Digraph buildEpsilonTrnsitionDigraph() {
 上面的构造过程，需要的时间和空间都只是正比于 M 的级别。因为，从上面添加边的过程可以看出，对于长度为 M 的正则表达式，每个字符我们最多只有加三条空转移边和两个对栈的操作。
 
 ## Applications
+
+课程举了挺多例子，这里不做展开。正则表达式模式匹配的起源是 Unix 的命令 grep （Generalized regular expression print，另说 Global search a regular expression and print），而现在正则表达式则已经被内置于许多现代编程系统之中，像 Perl、Python 和 Javascript。
