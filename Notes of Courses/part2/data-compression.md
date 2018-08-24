@@ -30,6 +30,164 @@
 
 ## run-length Coding
 
+比特流中最简单的冗余就是一长串重复的比特，游程编码（run-length coding）就利用这冗余来压缩数据。例子：
+
+![run-length-example](https://images2018.cnblogs.com/blog/886021/201808/886021-20180822232634504-2058562231.png)
+
+原理也很简单，就是统计重复的个数，直接记总数而不是全部写出来。上图的例子中用了 4 位计数，下面的代码里用了 8 位，最多能计到 255。要是有 300 个 1，计满 255 后再插入 8 位 0，表示有 0 个 0，然后再继续计剩下的 45 位就好。代码：
+
+```java
+public class RunLength {
+    private final static int R = 256;    // maximum run-length conut
+    private final static int lgR = 8;    // number of bits per conut
+
+    public static void compress() {
+        char cnt = 0;
+        boolean b, old = false;
+        while (!BinaryStdIn.isEmpty()) {
+            b = BinaryStdIn.readBoolean();
+            if (b != old) {
+                BinaryStdOut.write(cnt);
+                cnt = 0;
+                old = !old;
+            } else {
+                if (cnt == 255) {
+                    BinaryStdOut.write(cnt);
+                    cnt = 0;
+                    BinaryStdOut.write(cnt);
+                }
+            }
+            cnt++;
+        }
+        BinaryStdOut.write(cnt);
+        BinaryStdOut.close();
+    }
+
+    public static void expand() {
+        boolean bit = false;
+        while (!BinaryStdIn.isEmpty()) {
+            int run = BinaryStdIn.readInt(lgR); // read 8-bit conut from standard input
+            for (int i = 0; i < run; i++)
+                BinaryStdOut.write(bit);        // write 1 bit to standard output
+            bit = !bit;
+        }
+        BinaryStdOut.close();                  // pad 0s for byte alignment
+    }
+}
+```
+
+这种策略对实际应用中经常出现的几种比特流十分有效，游程编码的一个应用是压缩位图（bitmap），位图被广泛用于保存图片和扫描文档。简单起见，我们将二进制位图数据组织为将像素按行排列的比特流。可以看到，右边压缩后的比特流显然小了很多。
+
+![bitmap](https://images2018.cnblogs.com/blog/886021/201808/886021-20180822232652049-2104894680.png)
+
+游程编码不适用于含有大量短游程的输入，而不是所有我们希望压缩的比特流都含有较长的游程，所以下面来介绍两种适用于多种类型的文件压缩算法。
+
 ## Huffman Compression
+
+哈夫曼压缩和第一个年月日的例子一样，都采取变长编码，哈夫曼的原理就是用较短的编码来表示频率较高的字符，从而达到节省空间的目的。而变长编码存在多义性（ambiguity）的问题，用摩斯密码举例说明：
+
+![morse-code](https://images2018.cnblogs.com/blog/886021/201808/886021-20180824093520472-208985476.png)
+
+**...---...** 是最常用的摩斯密码，表示 SOS，但是从上表来看，也可以解读为 V7、IAMIE 和 EEWNI，所以实际上密码之间还有一定的间隙隔开，以避免错误的解读。
+
+多义性的本质原因是有些字符的编码是其它字符编码的前缀，所以才可能会有不同的解读。而有种特殊的变长编码——**前缀码**（prefix-free code），字符编码肯定不是其它字符编码的前缀，也就不存在多义性的问题。
+
+前缀码可以很自然地用 Trie 来表示，被编码的字符都在叶子结点上，也就没有谁是谁的前缀。同时，也可以发现前缀码不是唯一的，那也就存在一个最优的前缀码，使得压缩后的比特流最短。
+
+![prefix-free-code-trie-representation](https://images2018.cnblogs.com/blog/886021/201808/886021-20180824093542502-874886173.png)
+
+### Trie Node
+
+```java
+private static class Node implements Comparable<Node> {
+    private final char ch;    // used only for leaf nodes
+    private final int freq;   // used only for compress
+    private final Node left, right;
+
+    public Node(char ch, int freq, Node left, Node right) {
+        this.ch = ch;
+        this.freq = freq;
+        this.left = left;
+        this.right = right;
+    }
+
+    private boolean isLeaf() {
+        return left == null && right == null;
+    }
+
+    public int compareTo(Node that) {
+        return this.freq - that.freq;
+    }
+}
+```
+
+字符出现频率在下面生成最优前缀码的时候会用到。
+
+用 Trie 表示的前缀码对文件进行压缩后，还要把 Tire 附上，解压（展开，expand）时才知道怎么做。所以得把 Trie 写入比特流，解压时再从比特流中读出来，这边按前序遍历的顺序来读写。
+
+![trie-write](https://images2018.cnblogs.com/blog/886021/201808/886021-20180824100341866-1413681786.png)
+
+到叶子结点都会先输出个 true（比特 1），内部结点则是 0，为读做了记号的感觉。当压缩文件很大时，附在开头的 Trie 相对就会显得很小，没有什么关系。
+
+![trie-read](https://images2018.cnblogs.com/blog/886021/201808/886021-20180824100358522-1292793519.png)
+
+在比特流中碰到 1，说明接下来 8 比特是叶子结点的字符，于是读入 8 位。
+
+现在，我们大概知道了要用 Trie 来压缩，以及怎么传输 Trie 好用于解压，关键的如何构造 Trie 还没说，特别得是构造最优前缀码的 Trie。实际上，哈夫曼的做法很好描述：首先你要知道字符出现的频率，然后每次挑两个最小的加起来，加起来的值再和原来的那些一起重复挑两个最小的加起来，从下往上接成 Trie。
+
+![huffman-demo](https://images2018.cnblogs.com/blog/886021/201808/886021-20180824093609541-224337691.png)
+
+### Constructing Huffman Trie
+
+```java
+private static Node buildTrie(int[] freq) {
+    MinPQ<Node> pq = new MinPQ<Node>();
+    for (char i = 0; i < R; i++)
+        if (freq[i] > 0)
+            pq.insert(New Node(i, freq[i], null, null));
+
+    // merge two smallest tries
+    while (pq.size() > 1) {
+        Node x = pq.delMin();
+        Node y = pq.delMin();
+        Node parent = new Node('\0', x.freq + y.freq, x, y);
+        pq.insert(parent);
+    }
+
+    return pa.delMin();
+}
+```
+
+### Optimal
+
+首先，需要个标准来判断各前缀码优劣。有个概念叫 Trie 的 **加权外部路径长度**，等于所有叶子结点的频率和其深度的乘积总和，也就是压缩后字符集的长度。最优前缀码 Trie T 的加权外部路径长度最小，记为 $B(T)$。
+
+**证明：** 对规模为 n （不小于 2）的字符集（至少两个不同字符），哈夫曼算法可以构造出一个最优的前缀码 Trie。
+
+- 当 n = 2 时，两个字符只能分别用 0 和 1 表示，显然成立。
+
+- 假设哈夫曼算法对规模为 K（大于 2）的字符集能构造出一个最优前缀码 Trie。
+
+- 现在考虑规模为 K + 1 的字符集 $C = \{x_{1}, x_{2},...,x_{k + 1}\}$，其中 $x_{1}, x_{2} \in C$ 是频率最小的两个字符。
+
+    令 $C^{'} = (C - \{x_{1}, x_{2}\}) \cup \{z\}$，其中 $f_{z} = f_{x_{1}} + f_{x_{2}}$（$f_{x}$ 为字符 x 出现的频率）。
+
+    根据假设，哈夫曼算法可以构造出规模为 K 的字符集 $C^{'}$ 的一个最优前缀码 Trie，不妨记做 $T^{'}$。对 $T^{'}$ 中表示 $z$ 的叶子结点添加两个孩子 $x_{1}$ 和 $x_{2}$ 得到的新 Trie 记做 $T$（相当于直接对 $C$ 用哈夫曼构造出来的）。
+
+    用反证法证明 $T$ 就是字符集 $C$ 的一个最优前缀码 Trie，为此需要先了解下面两个引理。
+  
+  1. $B(T^{'}) = B(T) - (d + 1)(f_{x_{1}} + f_{x_{2}}) +  d(f_{x_{1}} + f_{x_{2}}) = B(T) - (f_{x_{1}} + f_{x_{2}})$（d 为深度）。
+
+  2. 存在 $C$ 的一个最优前缀码 Trie，$x_{1}$ 和 $x_{2}$ 是最深叶子且为兄弟。这个不难证明，稍作计算就可以发现把 ${x_{1}}, x_{2}$ 和最深兄弟叶子结点交换不会增加加权外部路径长度。所以只要有一个最优，就能交换成上面的形式，也就肯定存在。
+
+    假设字符集 $C$ 存在着更优的 $T^{*}$，即有 $B(T^{*}) < B(T)$。且根据引理一，不妨认为 $T^{*}$ 即为 ${x_{1}}, x_{2}$ 是最深兄弟叶子结点的形式。从这样的 $T^{*}$ 里，类似地去掉 ${x_{1}}, x_{2}$ 得到 $T^{*'}$。由引理二有：
+
+    $B(T^{*'}) = B(T^{*}) - (f_{x_{1}} + f_{x_{2}}) < B(T) - (f_{x_{1}} + f_{x_{2}}) = B(T^{'})$
+
+    和 $T^{'}$ 是字符集 $C^{'}$ 的最优前缀码 Trie 矛盾，故 $T$ 是字符集 $C$ 的最优前缀码 Trie。
+
+    所以哈夫曼构造了规模为 K + 1 的字符集 C 的最优前缀码 Trie T，归纳得证。
+
+**参考链接：**[点我](https://zh.coursera.org/lecture/algorithms/058ha-fu-man-suan-fa-de-zheng-que-xing-zheng-ming-nLQya)。
 
 ## LZW-compression
