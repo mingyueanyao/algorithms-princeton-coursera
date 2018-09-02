@@ -162,4 +162,106 @@ next[i] 表示循环后缀数组第 i 个字符串的下一个字符串在排序
 
 ## 问题分析
 
+依旧是照着 [Checklist](http://coursera.cs.princeton.edu/algs4/checklists/burrows.html) 里建议的编程步骤进行。
+
+第一步建议我们实现 CircularSuffixArray 类，特别指出不要显示存储 N 个字符串，那会花费平方级的时间和空间：
+
+>Warning: beginning with Java 7, Update 6, the substring() method takes time and space proportional to the length of the substring—in other words, you cannot form the n circular suffixes explicitly because that would take both quadratic time and space.
+
+同时也提示我们只要保留每个循环后缀的索引，对索引数组进行排序即可：
+
+>Instead for each suffix, you only need to keep an index that indicates which character is the beginning of the suffix. This way you can build the N suffixes in linear time and space. Then sort this array of indices. It's just like sorting an array of references.
+
+索引数组用对应的循环后缀字符串作为键进行排序，而且这些字符串没有被显示地存储，所以课程里实现过的对字符串的排序算法不能直接调用（像 [Quick3string.java](https://algs4.cs.princeton.edu/code/edu/princeton/cs/algs4/Quick3string.java.html)，3-way string quicksort）。作业大概是想让我们自己写排序吧，但前期搜索过程中发现了更简单的做法（[博客链接](https://www.cnblogs.com/lxc1910/p/8697283.html)）：重写比较器里的 compare() 方法，用 Arrays.sort() 排。
+
+```java
+Arrays.sort(index, new Comparator<Integer>() {
+            public int compare(Integer idx1, Integer idx2) {
+                for (int i = 0; i < length; i++) {
+                    char c1 = value[(i + idx1) % length];
+                    char c2 = value[(i + idx2) % length];
+                    if (c1 > c2) return 1;
+                    if (c1 < c2) return -1;
+                }
+                return 0;
+            }
+        });
+```
+
+最终提交上去，时间测试勉强通过。后来又看到 github 上有个小哥 [gzc](https://github.com/gzc/MOOC-Course/blob/master/Princeton-Algorithm2/Algorithm2/CircularSuffixArray.java) 就是自己写课程里的快速三向字符串排序来做这编程作业，后面较短的字符串还用插入排序改进性能，厉害了。下面是测试结果的比较。
+
+```txt
+Tests 14-26: time to create circular suffix array for n random ASCII characters
+            and call index(i) for each i
+
+            [ max allowed time = 10 seconds and <= 20x reference ]
+
+                 n    student  reference      ratio         gzc   ratio
+-----------------------------------------------------------------------
+=> passed     1000       0.00       0.00       4.92        0.00    1.94
+=> passed     2000       0.00       0.00       3.95        0.00    0.80
+=> passed     4000       0.00       0.00       3.95        0.00    0.72
+=> passed     8000       0.00       0.00       6.48        0.00    1.95
+=> passed    16000       0.01       0.00       4.96        0.00    2.91
+=> passed    32000       0.02       0.00       7.22        0.00    3.56
+=> passed    64000       0.03       0.00       8.30        0.01    4.10
+=> passed   128000       0.07       0.01       8.40        0.02    3.37
+=> passed   256000       0.15       0.03       4.30        0.04    2.32
+=> passed   512000       0.35       0.08       4.43        0.08    1.48
+=> passed  1024000       0.70       0.06      11.53        0.18    1.62
+=> passed  2048000       1.74       0.15      11.60        0.42    1.96
+=> passed  4096000       3.91       0.33      11.74        0.94    2.88
+
+Estimated running time (using last 6 measurements)
+    = 6.79e-08 * n^1.17  (R^2 = 1.00)
+```
+
+针对字符串的排序效果自然更好，但简单的可以满足性能要求，也就不再学小哥去自己打啦。
+
+接着建议我们实现 Burrows-Wheeler 类，说其中的 inverseTransform() 方法是作业最具技巧性的部分：
+
+>The Burrows-Wheeler decoding is the trickiest part, but it is very little code once you understand how it works. (Not including declarations and input, our solution is about 10 lines of code.) You may find the key-indexed counting algorithm from the string sorting lecture to be useful.
+
+提示我们要用到基数排序（键索引计数算法），但我是没想出来。。。还是看 [gzc](https://github.com/gzc/MOOC-Course/blob/master/Princeton-Algorithm2/Algorithm2/BurrowsWheeler.java) 小哥的才知道怎么做。
+
+```java
+int len = lastCol.length();
+int[] next = new int[len];
+int[] count = new int[R + 1];
+char[] firstCol = new char[len];
+for (int i = 0; i < len; i++)
+    count[lastCol.charAt(i) + 1]++;
+for (int i = 0; i < R; i++)
+    count[i + 1] += count[i];
+for (int i = 0; i < len; i++) {
+    int posi = count[lastCol.charAt(i)]++;
+    firstCol[posi] = lastCol.charAt(i);
+    next[posi] = i;
+}
+```
+
+关键在于怎么构建 next 数组。解码的时候我们知道循环后缀数组的最后一列字符，于是对其进行基数排序来得到第一列。但在基数排序的时候，最后加一行代码就能很容易地同时算出 next 数组。用图会很好理解：
+
+```txt
+ i      Sorted Suffixes     t      next[i]
+--    -----------------------      -------
+ 0    ! ? ? ? ? ? ? ? ? ? ? A        3
+ 1    A ? ? ? ? ? ? ? ? ? ? R        0
+ 2    A ? ? ? ? ? ? ? ? ? ? D        6
+*3    A ? ? ? ? ? ? ? ? ? ? !        7
+ 4    A ? ? ? ? ? ? ? ? ? ? R        8
+ 5    A ? ? ? ? ? ? ? ? ? ? C        9
+ 6    B ? ? ? ? ? ? ? ? ? ? A       10
+ 7    B ? ? ? ? ? ? ? ? ? ? A       11
+ 8    C ? ? ? ? ? ? ? ? ? ? A        5
+ 9    D ? ? ? ? ? ? ? ? ? ? A        2
+10    R ? ? ? ? ? ? ? ? ? ? B        1
+11    R ? ? ? ? ? ? ? ? ? ? B        4
+```
+
+前面计算 count 数组后，最后一个循环遍历数组 t，能直接把 t[i] 放在排序后的对应位置。像 t[] 的第 0 个字符 A，排序后的位置是 count[A]（上图代码计算后得到的是 1），所以第 0 行末尾的 A 和第 1 行开头的 A 是同一个。那么，在还没有排序之前，第 0 行的字符串即是第 1 行字符串的下一行（第 1 行循环左移一位得到第 0 行）。所以，按照 next 数组的定义：排序前第 i 条字符串的下一行字符串在排序后的行号，next[i] 就等于 i。
+
+最后的 MoveToFront 类比较简单，不提。
+
 ## 测试结果
+
