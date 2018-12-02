@@ -135,7 +135,72 @@ public String pop() {
 
 ## queues
 
+同样的，以一个放字符串的队列为例。
+
+### queue API
+
+![queue-api](https://img2018.cnblogs.com/blog/886021/201812/886021-20181202215628085-405941784.png)
+
+### queue linked-list
+
+用链表实现的队列，入队和出队的示意图。
+
+![dequeue-enqueue](https://img2018.cnblogs.com/blog/886021/201812/886021-20181202215651076-1253221778.png)
+
+代码：
+
+```java
+public class LinkedQueueOfStrings {
+    private Node first, last;
+
+    private class Node {
+        String item;
+        Node next;
+    }
+
+    public boolean isEmpty() {
+        return first == null;
+    }
+
+    public void enqueue(String item) {
+        Node oldlast = last;
+        last = new Node();
+        last.item = item;
+        last.next = null;
+        if (isEmpty()) first = last;
+        else oldlast.next = last;
+    }
+
+    public String dequeue() {
+        String item = first.item;
+        first = first.next;
+        if (isEmpty()) last = null;
+        return item;
+    }
+}
+```
+
+### queue array
+
+数组实现不详述。
+
+![queue-array](https://img2018.cnblogs.com/blog/886021/201812/886021-20181202215710130-2048359991.png)
+
 ## generics
+
+上面我们实现了放字符串的栈和队列，要是现在需要放整数的呢，复制代码改下类型未免有点让人不太满意，泛型（generic）可以很好地解决这个问题。
+
+![generic-stack-linked-list](https://img2018.cnblogs.com/blog/886021/201812/886021-20181202221409369-1147280455.png)
+
+把链表实现的栈改成上面那样，客户端就可以用这个栈存放任意类型的元素，只要你在声明时指定类型（Item）。另外，原始数据类型（short, int, long, float, double,, byte, boolean）需要借助对应的[包装类](https://www.cnblogs.com/mingyueanyao/p/7249003.html)，例如放整型的栈：`Stack<Integer> s = new Stack<Integer>();`。
+
+还有一个问题，Java 不允许声明泛型数组，所以数组实现的栈里面：
+
+```java
+s = new Item[capacity];                // wrong
+
+s = (Item[]) new Object[capacity];    // ok
+```
 
 ## iterators
 
