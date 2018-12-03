@@ -194,13 +194,19 @@ public class LinkedQueueOfStrings {
 
 把链表实现的栈改成上面那样，客户端就可以用这个栈存放任意类型的元素，只要你在声明时指定类型（Item）。另外，原始数据类型（short, int, long, float, double,, byte, boolean）需要借助对应的[包装类](https://www.cnblogs.com/mingyueanyao/p/7249003.html)，例如放整型的栈：`Stack<Integer> s = new Stack<Integer>();`。
 
-还有一个问题，Java 不允许声明泛型数组，所以数组实现的栈里面：
+还有一个问题，Java 不允许创建泛型数组，所以数组实现的栈里面：
 
 ```java
 s = new Item[capacity];                // wrong
 
 s = (Item[]) new Object[capacity];    // ok
 ```
+
+可行但编译时还是会有警告，不过也没什么关系。
+
+![unckecked-cast](https://img2018.cnblogs.com/blog/886021/201812/886021-20181203213341852-577379682.png)
+
+关于 Java 不允许创建泛型数组，可以看看[链接 1](https://www.cnblogs.com/scutwang/articles/3735219.html) 和[链接 2](https://blog.csdn.net/orzlzro/article/details/7017435) 的说明。其实我不是很懂，总觉得可以用泛型数组的话，也不会写成会有问题的例子那样。
 
 ## iterators
 
