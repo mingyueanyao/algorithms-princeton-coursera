@@ -219,6 +219,7 @@ import java.util.Iterator;
 
 public class Stack<Item> implements Iterable<Item> {
     ...
+
     public Iterator<item> iterator() {
         return new ListIterator();
     }
@@ -250,6 +251,7 @@ import java.util.Iterator;
 
 public class Stack<Item> implements Iterable<Item> {
     ...
+
     public Iterator<item> iterator() {
         return new ReverseArrayIterator();
     }
@@ -273,3 +275,42 @@ public class Stack<Item> implements Iterable<Item> {
 ```
 
 ## applications
+
+课程建议我们在课程中不要使用 Java 里实现的栈和队列，除非你真的理解它们到底做了什么，因为商业实现功能丰富，API 比较臃肿，未必像你想的那么有效率。
+
+然后列了很多栈的应用，像网页回退，Word 中的撤销，编译器中的函数调用等等，特别介绍了算术表达式计算的双栈法。
+
+![two-stacks](https://img2018.cnblogs.com/blog/886021/201812/886021-20181204155505940-1738070410.png)
+
+- **操作数**：压入操作数栈。
+- **操作符**：压入操作符栈。
+- **左括号**：忽略。
+- **右括号**：弹出两个操作数和一个操作符进行运算，结果再压入操作数栈。
+
+代码：
+
+```java
+public class Evaluate {
+    public static void main(String[] args) {
+        Stack<String> ops = new Stack<String>();
+        Stack<Double> vals = new Stack<Double>();
+        while (!StdIn.isEmpty()) {
+            String s = StdIn.readString();
+            if (s.equals("("))    ;
+            else if (s.equals("+")) ops.push(s);
+            else if (s.equals("-")) ops.push(s);
+            else if (s.equals(")")) {
+                String op = ops.pop();
+                if (op.equals("+")) vals.push(vals.pop() + vals.pop());
+                else if (op.equals("*")) vals.push(vals.pop() * vals.pop());
+            }
+            else vals.push(Double.parseDouble(s));
+        }
+        StdOut.println(vals.pop());
+    }
+}
+```
+
+这又是 Dijkstra 发明的方法，一步步从里到外把括号里的运算换成运算结果，最后即是整个算术表达式的结果。在此基础上，可以拓展到更多的其它运算，上面的例子只有加法和乘法，操作数可以交换，要是减法和除法的话，得把先 pop() 出的减（除）数储下来，再 pop() 出被减（除）数来减（除）去前者，不能像上面那么写。更有建立优先级矩阵，可以处理不带括号的表达式等。
+
+另外，把上面表达式的操作符放操作数后面，变成 (1 ((2 3 +) (4 5 +)*)+)，Dijkstra 的双栈法也会算出同样的结果，而且这时式中的括号是冗余的，去掉也会得到正确的答案。原始的表达式操作符在操作数中间，称为中缀表达式，这里是它的后缀表达式或者叫逆波兰表示。
