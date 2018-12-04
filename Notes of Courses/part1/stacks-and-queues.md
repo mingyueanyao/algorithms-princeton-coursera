@@ -210,4 +210,66 @@ s = (Item[]) new Object[capacity];    // ok
 
 ## iterators
 
+对可迭代的（iterable）对象，Java 支持更优雅的 foreach 遍历。可迭代的对象含有一个返回迭代器（iterator）的方法，迭代器里又含有方法 hasNext() 和 next()（还有 remove()，课程不建议使用）。上面的栈变成下面这样，就可以用 foreach 来遍历。
+
+### linkes-list
+
+```java
+import java.util.Iterator;
+
+public class Stack<Item> implements Iterable<Item> {
+    ...
+    public Iterator<item> iterator() {
+        return new ListIterator();
+    }
+
+    private class ListIterator implements Iterator<Item> {
+        private Node current = first;
+
+        public boolean hasNext() {
+            return current != null;
+        }
+
+        public void remove() {
+            /* not supported */
+        }
+
+        public Item next() {
+            Item item = current.item;
+            current = current.next;
+            return item;
+        }
+    }
+}
+```
+
+### array
+
+```java
+import java.util.Iterator;
+
+public class Stack<Item> implements Iterable<Item> {
+    ...
+    public Iterator<item> iterator() {
+        return new ReverseArrayIterator();
+    }
+
+    private class ReverseArrayIterator implements Iterator<Item> {
+        private int i = N;
+
+        public boolean hasNext() {
+            return i > 0;
+        }
+
+        public remove() {
+            /* not supported */
+        }
+
+        public Item next() {
+            return s[--i];
+        }
+    }
+}
+```
+
 ## applications
