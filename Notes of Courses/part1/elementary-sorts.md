@@ -92,7 +92,7 @@ private static boolean isSorted(Comparable[] a) {
 }
 ```
 
-因为你只对数组元素进行交换和比大小操作，只有最后有序了才能通过上面的测试。要是还允许其它操作，比如全部赋值成 1，那也可以通过上面的测试，但显然不算完成排序。总之大概就是封装抽象出这两操作，会比较方便，不管是排序还是测试。
+因为你只对数组元素进行交换和比大小操作，只有最后有序了才能通过上面的测试。要是还允许其它操作，比如全部赋值成 1，那也可以通过上面的测试，但显然不算完成排序。总之大概就是封装抽象出这两操作，会比较方便，不管是排序还是测试。而且便于理解，也增强了代码可移植性，将 less() 改成 v < w 就可以支持没实现 Comparable 接口的基本数据类型。
 
 ## selection sort
 
@@ -100,7 +100,7 @@ private static boolean isSorted(Comparable[] a) {
 
 例图：
 
-![insertion](https://img2018.cnblogs.com/blog/886021/201812/886021-20181217153636205-1956689716.png)
+![selection](https://img2018.cnblogs.com/blog/886021/201812/886021-20181217153636205-1956689716.png)
 
 第一次选择 a[0] ~ a[10] 中最小的 A，和第一个位置交换；第二次选 a[1] ~ a[10] 中最小的 E，和第二个位置交换；第三次选 a[2] ~ a[10] 中最小的 E，和第三个位置交换 ... 。
 
@@ -109,6 +109,7 @@ private static boolean isSorted(Comparable[] a) {
 ```java
 public class Selection {
     public static void sort(Comparable[] a) {
+        int N = a.length;
         for (int i = 0; i < N; i++) {
             int min = i;
             for (int j = i + 1; j < N; j++)
@@ -127,7 +128,74 @@ public class Selection {
 
 ## insertion sort
 
+插入排序和选择排序一样，要从左到右遍历数组，过程中左边部分都是有序的，每次把新元素插入到左边合适的位置，例图：
+
+![insertion](https://img2018.cnblogs.com/blog/886021/201812/886021-20181218115111133-1860238666.png)
+
+前三次新元素比较大，直接插入到左部末尾，第四次把 E 插入到左边起始位置，第五次 X 也是直接插入到末尾，可以感受到插入排序的比较和交换次数和具体输入有关，不像选择排序是输入无关的。
+
+代码：
+
+```java
+public class Insertion {
+    public static void sort(Comparable[] a) {
+        int N = a.length;
+        for (int i = 0; i < N; i++)
+            for (int j = i; j > 0; j--)
+                if (less(a[j], a[j - 1]))
+                    exch(a, j, j - 1);
+                else break;
+    }
+
+    private static boolean less(Comparable v, Comparable w) {...}
+    private static void exch(Comparable[] a, int i, int j) {...}
+}
+```
+
+最好情况下，输入数据本来就是有序的，插入排序都不用交换，只要 N - 1 次比较，时间复杂度为 O(N)；最坏情况，输入数据是逆序的，比较和交换都要 1 + 2 + ... + (N - 1) ~ $N^{2}/2$ 次，时间复杂度为 O($N^{2}$)；对于随机排列的数据，平均情况下插入排序需要 ~$N^{2}/4$ 次比较和 ~$N^{2}/4$ 次交换（详细证明不清楚，问题不大）。
+
+虽然插入排序最坏情况下也是 O($N^{2}$) 级别，但是能够马上发现有序数组每个元素就在合适位置上，插入排序对部分有序的（**partially-sorted**）数组也很有效。如果数组里逆序对（**inversion**）的数量小于数组大小的常数倍，就说这数组是部分有序的。逆序对即数组里不符合排序要求的元素对，有序的话就没有，例子：
+
+![inversion](https://img2018.cnblogs.com/blog/886021/201812/886021-20181218151428986-1657630429.png)
+
+插入排序每次交换都会减少一个逆序对，所以需要的交换次数即等于逆序对数目。而比较的次数最多等于交换次数加上 N - 1，有可能比较了不交换，所以会多。总得来看，部分有序数组的逆序对小于数组大小的某个常数倍，而插入排序需要的比较和交换次数小于逆序对的某个常数倍，所以插入排序能在线性时间内排好部分有序的数组。对小规模的部分有序数组，插入排序很可能是最快的。
+
 ## shellsort
+
+希尔排序是插入排序的改进，插入排序每次交换只能把元素移动一位，要是数组很大，又要把元素插入到很远的地方，就会有很多次的比较和交换。希尔排序基于这缺点，一开始先在间隔 h 的元素里比较交换，交换成功相当于直接移动了 h 位，也减少了逆序对，数组更加有序；再用更小的步长 g 同样比较交换，因为 g < h，而且逆序对肯定不会变多，这步的交换后，数据还是 h 有序的；最后步长为 1 就是插入排序了，不过有前面的几次排序，逆序对少的数组排起来就很快了。
+
+例图：
+
+![shell](https://img2018.cnblogs.com/blog/886021/201812/886021-20181218161444620-747780072.png)
+
+很重要的问题是每次排序的步长怎么选择，Knuth 提出序列 3X + 1(1, 4, 13, 40,...)，可以证明最坏情况下需要的比较次数和 $N^{3/2}$ 成正比，也很容易计算。
+
+代码：
+
+```java
+public class Shell {
+    public static void sort(Comparable[] a) {
+        int N = a.length;
+
+        int h = 1;
+        while (h < N/3) h = h*3 + 1;    // 1, 4, 13, 40,...
+
+        while (h >= 1) {
+            // h-sort the array
+            for (int i = h; i < N; i++) {
+                for (int j = i; j >= h && less(a[j], a[j - h]); j -= h)
+                    exch(a, j, j - h);
+            }
+            h = h/3;
+        }
+    }
+
+    private static boolean less(Comparable v, Comparable w) {...}
+    private static void exch(Comparable[] a, int i, int j) {...}
+}
+```
+
+希尔排序的性能分析至今还是一个开放问题，没有准确的模型可以描述，在数学上还不知道对于随机数据需要的平均比较次数，还有最优步长序列又是什么。但是，这些问题偏学术性，实际使用中，对于中等规模的数组，希尔排序是一个很不错的选择，运行时间可以接受（复杂算法可能只会快两倍），代码简单，也不需要额外的空间。
 
 ## shuffling
 
