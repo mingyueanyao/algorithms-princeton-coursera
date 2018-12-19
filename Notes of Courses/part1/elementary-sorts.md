@@ -199,4 +199,52 @@ public class Shell {
 
 ## shuffling
 
+洗牌（shuffle），大概算排序的一种应用？给牌随机一个区间 (0, 1) 上的值，然后用排序来洗牌。不过，感觉介绍的另一个 Knuth Shuffling (Fisher–Yates shuffle 1938) 算法更值得一看。
+
+代码：
+
+```java
+public class StdRandom {
+    ...
+    public static void shuffle(Object[] a) {
+        int N = a.length;
+        for (int i = 0; i < N; i++) {
+            int r = StdRandom.uniform(i + 1);    // between 0 and i
+            exch(a, i, r);
+        }
+    }
+}
+```
+
+遍历一遍就好，可以在线性时间内得到随机序列，循环到 i 时将其和区间 [0, i] （或 [i,  N - 1]）上的随机位置交换。至于算法的正确性，考虑跑完之后序列不变的概率：第一次循环，第一张牌在位置 1 的概率为 1/1；第二次循环，第二张牌在位置 2 的概率为 1/2；... 所有牌都在原来位置的概率为 1/1 * 1/2 * ... * 1/N = 1/N!，而每个循环放其它位置的概率一样，同理得到其它序列的概率也是 1/N!，所以满足随机性。这样解释好像挺通的，或者看找到的一个更复杂的证明：[試證明 Knuth Shuffle 為均勻的](https://dotblogs.com.tw/litfal/2015/01/02/knuth_shuffle_proof)。
+
+小小的拓展是从 N 个元素里随机挑选 m 个，其中 m < N，第二次编程作业里也有涉及到。一开始直接放前 m 个，i 从 m + 1 到 N 时每次在区间 [0, i] 上随机得到 k，若 k < m，则把位置 k 的数换成 i 的，大于不管，也只要遍历一次。
+
+代码：
+
+```java
+public static int[] randomSample(int[] nums, int m) {
+        if (nums == null || nums.length == 0 || m <= 0) {
+            return new int[]{};
+        }
+
+        int[] sample = new int[m];
+        for (int i = 0; i < m; i++) {
+            sample[i] = nums[i];
+        }
+
+        Random random = new Random();
+        for (int i = m; i < nums.length; i++) {
+            int k = random.nextInt(i + 1); // 0~i(inclusive)
+            if (k < m) {
+                sample[k] = nums[i];
+            }
+        }
+
+        return sample;
+    }
+```
+
+代码来自 [Shuffle and Sampling - 随机抽样和洗牌](https://algorithm.yuanbin.me/zh-hans/basics_algorithm/probability/shuffle.html)，也有上面两个算法正确性的讨论，或者后面的证明可以看原来编程作业找到的[大狸子先生](http://www.cnblogs.com/lidunot-fear/p/8025840.html)。
+
 ## convex hull
