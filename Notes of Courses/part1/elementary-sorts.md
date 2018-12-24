@@ -248,3 +248,39 @@ public static int[] randomSample(int[] nums, int m) {
 代码来自 [Shuffle and Sampling - 随机抽样和洗牌](https://algorithm.yuanbin.me/zh-hans/basics_algorithm/probability/shuffle.html)，也有上面两个算法正确性的讨论，或者后面的证明可以看原来编程作业找到的[大狸子先生](http://www.cnblogs.com/lidunot-fear/p/8025840.html)。
 
 ## convex hull
+
+介绍了用到排序的凸包（convex hull）问题，已知一些点，问题即是找到把它们包起来的多边形的点，如下图：
+
+![convex-hull](https://img2018.cnblogs.com/blog/886021/201812/886021-20181224163910683-1041676668.png)
+
+应用场景比如有机器人找绕过障碍物的最短路径（下左），找这些点间最大的距离（下右）。
+
+![convex-hull-app](https://img2018.cnblogs.com/blog/886021/201812/886021-20181224164111062-1447160659.png)
+
+凸包有两个几何特性（geometric properties）:
+
+- 可以按逆时针方向遍历目标点。
+
+- 目标点按和 y 坐标最小的点的极角升序排列。
+
+Graham 扫描算法基于上面两个事实来找到目标点。
+
+![convex-hull-properties](https://img2018.cnblogs.com/blog/886021/201812/886021-20181224164621485-7879110.png)
+
+P 点的 y 坐标最小，其它点按与 P 的极角排序，上图已经编好号，按顺序一个个处理。点 1 先放进去，再把点 2 放进去，现在三个点 1，2，P 符合逆时针方向，继续下一个点；放点 3，点 1，2，3 符合逆时针方向；再放点 4，这时点 2，3，4 不符合逆时针方向，**回退** 丢掉点 3，点 1，2，4 还是不符合逆时针方向，继续回退丢掉点 2，点1，4，P 符合逆时针方向，然后再继续下一个点；... 结合上图，显然最后会得到的目标点。
+
+具体的实现，排序部分会在接下的课程里体现，以后再说；判断是否符合逆时针方向部分，花了不少时间理解下面那页 PPT，顺便回炉重造了下线性代数。另外 B 站是个学习的好地方: [线性代数的本质](https://www.bilibili.com/video/av6731067)，也有 [算法第四版](https://www.bilibili.com/video/av9995456)，Coursera 经常放不了。
+
+![cross-product](https://img2018.cnblogs.com/blog/886021/201812/886021-20181224171710113-1780986869.png)
+
+知道三个点的坐标，判断是否是逆时针方向，借助算围成的三角形的面积来做。上面等式的头尾是两个向量叉乘的几何意义：大小等于以它们为边的平行四边形的面积，三角形自然就是一半。不过叉乘好像是定义在三维空间上的，这边应该是把 Z 坐标默认为 0 来算二维？但也有看到二维向量叉乘直接等于二阶行列式的，个人觉得直接用二阶行列式解释面积更合适，还是叉乘的右手定则比较好让人判断方向。好像不是很严格也没关系，随便啦。
+
+>In computational geometry of the plane, the cross product is used to determine the sign of the acute angle defined by three points $p_{1}=(x_{1},y_{1}),p_{2}=(x_{2},y_{2})$ and $p_{3}=(x_{3},y_{3})$. It corresponds to the direction (upward or downward) of the cross product of the two coplanar vectors defined by the two pairs of points $(p_{1},p_{2})$ and $(p_{1},p_{3})$. The sign of the acute angle is the sign of the expression
+>
+>$P=(x_{2}-x_{1})(y_{3}-y_{1})-(y_{2}-y_{1})(x_{3}-x_{1})$,
+>
+>which is the signed length of the cross product of the two vectors.
+
+摘自 [wiki](https://en.wikipedia.org/wiki/Cross_product#Computational_geometry)。
+
+至于中间的那个三阶行列式，总觉得不该只是计算上的巧合。我觉得，根据行列式的几何意义，中间那个等于以向量 ($a_{x}$, $a_{y}$, 1)，($b_{x}$, $b_{y}$, 1)，($c_{x}$, $c_{y}$, 1) 为边的平行六面体的体积，然后以这三向量为棱边的三棱锥的体积是前面那个平行六面体的六分之一（想象一下特例正方体），同时三棱锥体积还可以用三个点围的三角形和 z 轴上的高 1 来算，于是可以算出三角形面积等于二分之一的三阶行列式。这样好像会好记些，不只是巧妙的计算。
