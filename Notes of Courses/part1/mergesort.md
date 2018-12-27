@@ -53,7 +53,7 @@ public class Merge {
     }
 
     public static void sort(Comparable[] a) {
-        aux = new Comparable[a.length];
+        Comparable[] aux = new Comparable[a.length];
         sort(a, aux, 0, a.length - 1);
     }
 }
