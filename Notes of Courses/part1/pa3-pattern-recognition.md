@@ -68,4 +68,45 @@
 
 ## 问题分析
 
+仍然按照 [Checklist](http://coursera.cs.princeton.edu/algs4/checklists/collinear.html) 里建议的编程步骤，先实现 [Point.java](https://github.com/mingyueanyao/algorithms-princeton-coursera/blob/master/Codes%20of%20Programming%20Assignments/part1/pa3-collinear/Point.java)。下载 [Point.java](http://coursera.cs.princeton.edu/algs4/testing/collinear/Point.java)，完成要求实现的方法。实际上，[specification](http://coursera.cs.princeton.edu/algs4/assignments/collinear.html) 里说得挺详细的，没什么问题，大概主要是让我们熟悉下可比较接口和比较器。
+
+>- The *compareTo()* method should compare points by their y-coordinates, breaking ties by their x-coordinates. Formally, the invoking point (x0, y0) is less than the argument point (x1, y1) if and only if either y0 < y1 or if y0 = y1 and x0 < x1.
+>
+>- The *slopeTo()* method should return the slope between the invoking point (x0, y0) and the argument point (x1, y1), which is given by the formula (y1 − y0) / (x1 − x0). Treat the slope of a horizontal line segment as positive zero; treat the slope of a vertical line segment as positive infinity; treat the slope of a degenerate line segment (between a point and itself) as negative infinity.
+>
+>- The *slopeOrder()* method should return a comparator that compares its two argument points by the slopes they make with the invoking point (x0, y0). Formally, the point (x1, y1) is less than the point (x2, y2) if and only if the slope (y1 − y0) / (x1 − x0) is less than the slope (y2 − y0) / (x2 − x0). Treat horizontal, vertical, and degenerate line segments as in the slopeTo() method.
+>
+>- Do not override the equals() or hashCode() methods.
+
+*slopeTo()* 方法两个点连线水平时返回正零，[Checklist](http://coursera.cs.princeton.edu/algs4/checklists/collinear.html) 里也有解释。
+
+>**What does it mean for slopeTo() to return positive zero?**
+>
+>Java (and the IEEE 754 floating-point standard) define two representations of zero: negative zero and positive zero.
+>
+>```java
+>double a = 1.0;
+>double x = (a - a) /  a;   // positive zero ( 0.0)
+>double y = (a - a) / -a;   // negative zero (-0.0)
+>```
+>
+>Note that while (x == y) is guaranteed to be true, [Arrays.sort()](https://docs.oracle.com/javase/7/docs/api/java/util/Arrays.html#sort(double[])) treats negative zero as strictly less than positive zero. Thus, to make the specification precise, we require you to return positive zero for horizontal line segments. Unless your program casts to the wrapper type Double (either explicitly or via autoboxing), you probably will not notice any difference in behavior; but, if your program does cast to the wrapper type and fails only on (some) horizontal line segments, this may be the cause.
+>
+
+接着实现 [BruteCollinearPoints.java](https://github.com/mingyueanyao/algorithms-princeton-coursera/blob/master/Codes%20of%20Programming%20Assignments/part1/pa3-collinear/BruteCollinearPoints.java) ，逻辑比较简单，还给了很多提示，也没问题。
+
+>To form a line segment, you need to know its endpoints. One approach is to form a line segment only if the 4 points are in ascending order (say, relative to the natural order), in which case, the endpoints are the first and last points.
+>
+>Hint: don't waste time micro-optimizing the brute-force solution. Though, there are two easy opportunities. First, you can iterate through all combinations of 4 points (N choose 4) instead of all 4 tuples (N^4), saving a factor of 4! = 24. Second, you don't need to consider whether 4 points are collinear if you already know that the first 3 are not collinear; this can save you a factor of N on typical inputs.
+
+把点排下序，线段的起始点自然就是遍历的头尾，甚至也教我们怎么排序。
+
+>**How do I sort a subarray in Java?**
+>
+>Arrays.sort(a, lo, hi) sorts the subarray from a[lo] to a[hi-1] according to the natural order of a[]. You can use a Comparator as the fourth argument to sort according to an alternate order.
+
+于是，最后的 [FastCollinearPoints.java](https://github.com/mingyueanyao/algorithms-princeton-coursera/blob/master/Codes%20of%20Programming%20Assignments/part1/pa2-queues/FastCollinearPoints.java) 相对复杂些。我是用了两个排序，一开始和暴力算法一样先按自然顺序排，就是先比 y 再比 x 那种，另一个是遍历点的时候按和该点的斜率排。斜率一样计数的就 ++，不小于三个再看这点的自然顺序是不是最小，是最小才将其和自然顺序最大的组成线段存起来。通过这种方法，获得线段的起始点，避免重复加入线段。
+
 ## 测试结果
+
+![part1-pa3](https://img2018.cnblogs.com/blog/886021/201812/886021-20181228172734429-2016843281.png)
