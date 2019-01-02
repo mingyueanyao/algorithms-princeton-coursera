@@ -171,4 +171,6 @@ public static Comparable select(Comparable[] a, int k) {
 
 ## duplicate keys
 
+实际应用中经常会出现含有大量重复元素的数组，而且经常排序的目的就是把某些值相等的元素归到一起，比如说按生日排员工资料等。归并排序，对于这种情况也一样处理，没差别，需要的比较次数还是在 1/2NlgN ~ NlgN，但绝大多数课本上的快排会达到平方级别的时间。
+
 ## system sorts
