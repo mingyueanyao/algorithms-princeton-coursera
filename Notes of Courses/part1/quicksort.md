@@ -165,12 +165,61 @@ public static Comparable select(Comparable[] a, int k) {
 
 示意：
 
-![select]()
+![select](https://img2018.cnblogs.com/blog/886021/201901/886021-20190102114342792-1792459420.png)
 
 最坏情况下还是 $N^{2}$ 级别，但是有混洗，概率很低。实际上，有最坏情况下也能保证线性级别的算法，但太复杂而在实际中没有使用。
 
 ## duplicate keys
 
-实际应用中经常会出现含有大量重复元素的数组，而且经常排序的目的就是把某些值相等的元素归到一起，比如说按生日排员工资料等。归并排序，对于这种情况也一样处理，没差别，需要的比较次数还是在 1/2NlgN ~ NlgN，但绝大多数课本上的快排会达到平方级别的时间。
+实际应用中经常会出现含有大量重复元素的数组，而且经常排序的目的就是把某些值相等的元素归到一起，比如说按生日排员工资料等。归并排序，对于这种情况也一样处理，没差别，需要的比较次数还是在 1/2NlgN ~ NlgN，但很多课本上的快排会达到平方级别的时间，如果指针碰到和划分元素相等的元素时不停下来。
+
+设想一个数组的元素都一样，在相等时不停止扫描，那尾指针就会一路扫到第二个位置，划分效果很差，递归排序子数组也是一样，直接达到 $N^{2}$ 级别的复杂度。相等时停止扫描的话，会刚好把数组对半分，递归下去，复杂度是 NlgN 的。但其实，对半分里面的元素交换根本就是没有必要的，我们想尽量地把相等元素放在原地。于是乎，很自然的一个想法是改进划分，最后分成小于，等于和大于三个部分。
+
+> Accomplishing this partitioning was a classical programming exercise popularized by E. W. Dijkstra as the Dutch National Flag problem, because it is like sorting an array with three possible key values, which might correspond to the three colors on the flag.
+
+-- [booksite-23quicksort](https://algs4.cs.princeton.edu/23quicksort/)
+
+Dijkstra 的方法：
+
+- 将划分元素 a[lo] 记做 v。
+  
+- 从左到右扫描数组，下标为 i。
+  - (a[i] < v)：交换 a[lt] 和 a[i]；lt 和 i 都加一
+  - (a[i] > v)：交换 a[gt] 和 a[i]；gt 减一
+  - (a[i] == v)：i 加一
+
+示意图：
+
+![partition3](https://img2018.cnblogs.com/blog/886021/201901/886021-20190102114405604-517903733.png)
+
+代码：
+
+```java
+private static void sort(Comparable[] a, int lo, int hi) {
+    if (hi <= lo) return;
+    int lt = lo, gt = hi;
+    Comparable v = a[lo];
+    int i = lo;
+    while (i <= gt) {
+        int cmp = a[i].compareTo(v);
+        if (cmp < 0) exch(a, lt++, i++);
+        else if (cmp > 0) exch(a, i, gt--);
+        else i++;
+    }
+
+    sort(a, lo, lt - 1);
+    sort(a, gt + 1, hi);
+}
+```
+
+划分轨迹示例：
+
+![partition3-trace](https://img2018.cnblogs.com/blog/886021/201901/886021-20190102114949580-1904894461.png)
+
+性能分析就贴张课件感受下，哈哈哈哈。
+
+![3ways-quicksort-time](https://img2018.cnblogs.com/blog/886021/201901/886021-20190102115502210-507435957.png)
+
+大概就是三路划分快排对很多应用，可以把时间复杂度从线性对数（linearithmic）降到线性级别。
 
 ## system sorts
