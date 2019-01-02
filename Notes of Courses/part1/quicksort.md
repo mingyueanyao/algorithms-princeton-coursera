@@ -143,6 +143,32 @@ private static void sort(Comparable[] a, int lo, int hi) {
 
 ## selection
 
+现在我们来看一个和排序相关的问题，目标是找到一组数中第 K 大的数，这是另一个用理论指导的例子。显然可以对这组数直接排序，然后输出位置 K 的数，所以该问题的复杂度上界可以是 NlgN。当 K 很小的时候，比如 2，你可以遍历两次数组找到，这时上界还可以是 N 级别。另外，复杂度的下界也是 N，因为每个元素至少要访问一次，万一目标就是你漏掉的那个呢。于是乎，我们想要的该是一个线性级别的算法。
+
+实际上，Hoare 在 1961 年的原论文（上面的基础版快排）里就介绍了基于划分（partition）的算法，平均情况下（先混洗）有线性级别的性能。
+
+代码：
+
+```java
+public static Comparable select(Comparable[] a, int k) {
+    StdRandom.shuffle(a);
+    int lo = 0, hi = a.length - 1;
+    while (hi > lo) {
+        int j = partition(a, lo, hi);
+        if (j < k) lo = j + 1;
+        else if (j > k) hi = j - 1;
+        else return a[k];
+    }
+    return a[k];
+}
+```
+
+示意：
+
+![select]()
+
+最坏情况下还是 $N^{2}$ 级别，但是有混洗，概率很低。实际上，有最坏情况下也能保证线性级别的算法，但太复杂而在实际中没有使用。
+
 ## duplicate keys
 
 ## system sorts
