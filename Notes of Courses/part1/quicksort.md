@@ -80,17 +80,17 @@ public class Quick {
 
 ### 性能分析
 
-最好情况下，每次划分选的元素都刚好把数组分成两半，这就有点像归并排序了，需要的比较次数是 NlgN 级别。最坏情况下，每次划分选的元素都是最小的，那需要的比较次数就是 $N^{2}$ 级的。平均情况下，也就是排序之前随机打乱无重复元素的数组，快排需要 ~2NlnN 次比较，证明：
+最好情况下，每次划分选的元素都刚好把数组分成两半，这就有点像归并排序了，需要的比较次数是 NlgN 级别。最坏情况下，每次划分选的元素都是最小的，递归树就会很高，那需要的比较次数就是 $N^{2}$ 级的。平均情况下，也就是排序之前随机打乱**无重复**（重复的下面会说）元素的数组，快排需要 ~2NlnN 次比较，证明：
 
-$C_{N}$ = (N + 1) + $(\frac{C_{0} + C_{N-1}}{N})$ + $(\frac{C_{1} + C_{N-2}}{N})$ + ... + $(\frac{C_{N-1} + C_{0}}{N})$
+$C_{N}$ = $(N + 1)$ + $(\frac{C_{0} + C_{N-1}}{N})$ + $(\frac{C_{1} + C_{N-2}}{N})$ + ... + $(\frac{C_{N-1} + C_{0}}{N})$
 
-N + 1 是每次划分时需要的比较次数，基准值和其它 N - 1 个比较，i 和 j 相遇多比了两次，我觉得大概是这样理解。后面是递归排序的比较次数，而且划分基准选取每个位置的可能性是一样的，所以都带 $\frac{1}{N}$。等式两边乘 N，整理各项有：
+N + 1 是每次划分时需要的比较次数，基准值和其它 N - 1 个比较，i 和 j 相遇多比了两次，我觉得大概是这样理解。后面是递归排序的比较次数，因为划分基准选取每个位置的可能性是一样的，所以都带 $\frac{1}{N}$。等式两边乘 N，整理各项有：
 
-$NC_{N}$ = N(N + 1) + 2($C_{0}$ + $C_{1}$ + ... + $C_{N-1}$)
+$NC_{N}$ = $N(N + 1)$ + $2(C_{0}$ + $C_{1}$ + ... + $C_{N-1}$)
 
 上式减去 N-1 时的相同等式可得：
 
-$NC_{N}$ - (N - 1)$C_{N-1}$ = 2N + $2C_{N-1}$
+$NC_{N}$ - $(N - 1)C_{N-1}$ = $2N$ + $2C_{N-1}$
 
 整理后再两边同时除以 N(N + 1) 得：
 
@@ -102,7 +102,7 @@ $\frac{C_{N}}{N + 1}$ = $\frac{C_{N-1}}{N}$ + $\frac{2}{N + 1}$
 
 所以，平均情况下，快排需要的比较次数比归并排序多 39%，但实际上快排一般会比归并排序快，因为快排移动数据的次数更少。排序之前随机混洗，就是为了尽可能避免最坏情况，达到平均情况的表现，保证性能。
 
-另外，快排是就地（in-place）排序，不需要额外空间。还有，快排不是稳定排序，交换可能改变相等元素的相对位置。
+另外，快排是就地（in-place）排序，不需要额外空间。还有，快排不是稳定排序，交换可能改变相等元素的相对位置，图例：
 
 ![not-stable](https://img2018.cnblogs.com/blog/886021/201812/886021-20181229155728934-806634897.png)
 
@@ -147,6 +147,10 @@ private static void sort(Comparable[] a, int lo, int hi) {
 
 实际上，Hoare 在 1961 年的原论文（上面的基础版快排）里就介绍了基于划分（partition）的算法，平均情况下（先混洗）有线性级别的性能。
 
+示意：
+
+![select](https://img2018.cnblogs.com/blog/886021/201901/886021-20190102114342792-1792459420.png)
+
 代码：
 
 ```java
@@ -163,11 +167,9 @@ public static Comparable select(Comparable[] a, int k) {
 }
 ```
 
-示意：
+最坏情况下还是 $N^{2}$ 级别，但是有混洗，概率很低。实际上，有最坏情况下也能保证线性级别的算法，但太复杂而在实际中没有使用。啊对，那个证明，看看就好吧：
 
-![select](https://img2018.cnblogs.com/blog/886021/201901/886021-20190102114342792-1792459420.png)
-
-最坏情况下还是 $N^{2}$ 级别，但是有混洗，概率很低。实际上，有最坏情况下也能保证线性级别的算法，但太复杂而在实际中没有使用。
+![select-pf](https://img2018.cnblogs.com/blog/886021/201901/886021-20190102161057202-174004481.png)
 
 ## duplicate keys
 
@@ -177,7 +179,7 @@ public static Comparable select(Comparable[] a, int k) {
 
 > Accomplishing this partitioning was a classical programming exercise popularized by E. W. Dijkstra as the Dutch National Flag problem, because it is like sorting an array with three possible key values, which might correspond to the three colors on the flag.
 
--- [booksite-23quicksort](https://algs4.cs.princeton.edu/23quicksort/)
+-- [booksite.23quicksort](https://algs4.cs.princeton.edu/23quicksort/)
 
 Dijkstra 的方法：
 
@@ -216,10 +218,26 @@ private static void sort(Comparable[] a, int lo, int hi) {
 
 ![partition3-trace](https://img2018.cnblogs.com/blog/886021/201901/886021-20190102114949580-1904894461.png)
 
-性能分析就贴张课件感受下，哈哈哈哈。
-
 ![3ways-quicksort-time](https://img2018.cnblogs.com/blog/886021/201901/886021-20190102115502210-507435957.png)
 
-大概就是三路划分快排对很多应用，可以把时间复杂度从线性对数（linearithmic）降到线性级别。
+说是熵最优的排序，对大多数情况可以把线性对数级（linearithmic）的性能提高到线性级别，看看就好，看看就好。。
 
 ## system sorts
+
+最后一节介绍了些系统排序有的没的，贴些课件体会下。
+
+![java-system-sorts](https://img2018.cnblogs.com/blog/886021/201901/886021-20190102152559842-1893803860.png)
+
+Java 对象排序用归并，课程说可能是设计者觉得用户都用对象了，那归并的额外空间该是也可以接受的，原始数据类型大概就比较看重性能，就用快排。这个好像也有其他说法，反正随便啦。
+
+![engineer-a-system-sort](https://img2018.cnblogs.com/blog/886021/201901/886021-20190102152722200-1055912713.png)
+
+![tukey-ninther](https://img2018.cnblogs.com/blog/886021/201901/886021-20190102152757734-1955752767.png)
+
+上面对排序一顿改进，好像很厉害的样子，不过课程说有杀手输入会让它崩溃，[booksite](https://algs4.cs.princeton.edu/23quicksort/) 上有提到这部分：
+
+>**Antiquicksort.** The algorithm for sorting primitive types in Java is a variant of 3-way quicksort developed by [Bentley and McIlroy](https://algs4.cs.princeton.edu/references/papers/bentley-mcilroy.pdf). It is extremely efficient for most inputs that arise in practice, including inputs that are already sorted. However, using a clever technique described by M. D. McIlroy in [A Killer Adversary for Quicksort](https://algs4.cs.princeton.edu/references/papers/mcilroy.pdf), it is possible to construct pathological inputs that make the system sort run in quadratic time. Even worse, it overflows the function call stack. To see the sorting library in Java 6 break, here are some killer inputs of varying sizes: [10,000](https://algs4.cs.princeton.edu/23quicksort/antiquicksort10K.txt), [20,000](https://algs4.cs.princeton.edu/23quicksort/antiquicksort20K.txt), [50,000](https://algs4.cs.princeton.edu/23quicksort/antiquicksort50K.txt), [100,000](https://algs4.cs.princeton.edu/23quicksort/antiquicksort100K.txt), [250,000](https://algs4.cs.princeton.edu/23quicksort/antiquicksort250K.txt), [500,000](https://algs4.cs.princeton.edu/23quicksort/antiquicksort500K.txt), and [1,000,000](https://algs4.cs.princeton.edu/23quicksort/antiquicksort1M.txt). You can test them out using the program [IntegerSort.java](https://algs4.cs.princeton.edu/23quicksort/IntegerSort.java.html) which takes a command line input N, reads in N integers from standard input, and sorts them using the system sort.
+
+所以，总之课程还是偏向排序前混洗下数组吧。然后，说到该怎么选择排序算法，可以考虑稳定性，时间复杂度，空间复杂度等，一般系统排序也够用了，最后贴上目前接触到的小总结。
+
+![sorting-summary](https://img2018.cnblogs.com/blog/886021/201901/886021-20190102152824709-2064887953.png)
