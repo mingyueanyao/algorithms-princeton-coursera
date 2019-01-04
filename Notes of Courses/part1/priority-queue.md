@@ -141,4 +141,92 @@ public class MaxPQ<Key extends Comparable<Key>> {
 
 ## heapsort
 
+如果把数组塞进优先队列，再一个个删掉，那实际上按删掉的顺序就对数组排了个序，所以又有种全新的排序算法，叫做堆排序。这个算法自然地分成两步：先把数组调整成符合堆顺序，即构造堆，然后每次把 a[1] 和 a[N--] 交换，当 N 减到 1 时也就排好了序。另外，数组下标从 0 开始，而堆是从 1 开始，需要一定转换，下面先假设待排数组也是从 1 开始，方便说明。
+
+### heap construction
+
+对有孩子的节点用下沉操作，自底向上地构造堆。完全二叉树有孩子的节点，从 N/2 开始到 1，只要遍历一半数组。
+
+```java
+for (int k = N/2; k >= 1; k--)
+    sink(a, k, N);
+```
+
+### sortdown
+
+有了堆，那排序比优先队列出队还简单：
+
+```java
+while (N > 1) {
+    exch(a, 1, N--);
+    sink(a, 1, N);
+}
+```
+
+构造和排序的图例：
+
+![heapsort-trace](https://img2018.cnblogs.com/blog/886021/201901/886021-20190104160911534-1051977493.png)
+
+[代码](https://algs4.cs.princeton.edu/24pq/Heap.java.html)：
+
+```java
+public class Heap {
+    public static void sort(Comparable[] pq) {
+        int n = pq.length;
+        for (int k = n/2; k >= 1; k--)
+            sink(pq, k, n);
+        while (n > 1) {
+            exch(pq, 1, n--);
+            sink(pq, 1, n);
+        }
+    }
+
+    public static void sink(Comparable[] pq, int k, int n) {
+        while (2*k <= n) {
+            int j = 2*k;
+            if (j < n && less(pq, j, j+1)) j++;
+            if (!less(pq, k, j)) break;
+            exch(pq, k, j);
+            k = j;
+        }
+    }
+
+    private static boolean less(Comparable[] pq, int i, int j) {
+        return pq[i-1].compareTo(pq[j-1]) < 0;
+    }
+
+    private static void exch(Object[] pq, int i, int j) {
+        Object swap = pq[i-1];
+        pq[i-1] = pq[j-1];
+        pq[j-1] = swap;
+    }
+}
+```
+
+可以看到，数组下标的转换也就是方法 less() 和 exch() 里索引减一。
+
+再来张排序轨迹示例：
+
+![heapsort](https://img2018.cnblogs.com/blog/886021/201901/886021-20190104161429233-282687686.png)
+
+一开始调整堆顺序看不出什么，后面就有点像选择排序了，每次找出最大的放尾巴，但是需要的比较次数少得多。
+
+### 性能分析
+
+构造堆的时候，复杂度甚至是 N 级别的，需要的交换次数少于 N，于是需要的比较的次数少于 2N（两个孩子的话多比较一次孩子大小），可以这样理解：
+
+![pf](https://img2018.cnblogs.com/blog/886021/201901/886021-20190104170755447-880861128.png)
+
+首先，n 个点的二叉堆有 n-1 条链接，因为除了根节点每个点都有条链接指向其父节点。然后，我们从点出发，按左-右-右-右-... 的顺序分配这些链接，这样链接只会属于一个点，甚至根左边那条还没点管，看上图感受下。最后，点下沉需要最多的交换次数等于属于它的链接数，所以构造时总共需要的交换次数不会超过 n。
+
+参考自 [booksite](https://algs4.cs.princeton.edu/24pq/) 练习的最后一题。
+
+>20.Prove that sink-based heap construction uses at most 2n compares and at most n exchanges.
+
+至于后面的排序，要遍历数组，下沉最多是树高为 lgN，显然是 NlgN 级别。于是乎，好像有了个很厉害的算法，不像归并排序需要额外的空间，不像快排最坏情况不能保证 NlgN 的性能，但现代系统的很多应用并不使用堆排序，因为它无法有效地利用缓存（cache）。数组元素很少和相邻的其它元素进行比较，因此缓存未命中的次数要远远高于大多数比较都在相邻元素间进行的算法，如快排、归并排序，甚至是希尔排序。另外，也不是稳定的。
+
+### sorting algorithms summary
+
+![summary](https://img2018.cnblogs.com/blog/886021/201901/886021-20190104172843632-986173496.png)
+
 ## event-driven simulation
