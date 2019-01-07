@@ -62,7 +62,7 @@ private void swim(int k) {
 
 ```java
 public void insert(Key x) {
-    pq[++N] = xl
+    pq[++N] = x;
     swim(N);
 }
 ```
@@ -93,7 +93,7 @@ public Key delMax() {
 }
 ```
 
-因为有 N 个点的完全二叉树的高度位 lgN 取下整（高度只有在节点数为 2 的幂时才会加一），所以上浮和下沉的复杂度都是 lgN 级别。
+因为有 N 个点的完全二叉树的高度为 lgN 取下整（高度只有在节点数为 2 的幂时才会加一），所以上浮和下沉的复杂度都是 lgN 级别。
 
 图例：
 
@@ -219,14 +219,224 @@ public class Heap {
 
 首先，n 个点的二叉堆有 n-1 条链接，因为除了根节点每个点都有条链接指向其父节点。然后，我们从点出发，按左-右-右-右-... 的顺序分配这些链接，这样链接只会属于一个点，甚至根左边那条还没点管，看上图感受下。最后，点下沉需要最多的交换次数等于属于它的链接数，所以构造时总共需要的交换次数不会超过 n。
 
-参考自 [booksite](https://algs4.cs.princeton.edu/24pq/) 练习的最后一题。
+来自 [booksite](https://algs4.cs.princeton.edu/24pq/) 练习的最后一题。
 
 >20.Prove that sink-based heap construction uses at most 2n compares and at most n exchanges.
 
-至于后面的排序，要遍历数组，下沉最多是树高为 lgN，显然是 NlgN 级别。于是乎，好像有了个很厉害的算法，不像归并排序需要额外的空间，不像快排最坏情况不能保证 NlgN 的性能，但现代系统的很多应用并不使用堆排序，因为它无法有效地利用缓存（cache）。数组元素很少和相邻的其它元素进行比较，因此缓存未命中的次数要远远高于大多数比较都在相邻元素间进行的算法，如快排、归并排序，甚至是希尔排序。另外，也不是稳定的。
+至于后面的排序，要遍历数组，下沉最多是树高为 lgN，显然是 NlgN 级别。于是乎，好像有了个很厉害的算法，不像归并排序需要额外的空间，不像快排最坏情况不能保证 NlgN 的性能，但现代系统的很多应用并不使用堆排序，因为它无法有效地利用缓存（cache）。数组元素很少和相邻的其它元素进行比较，因此缓存未命中的次数要远远高于大多数比较都在相邻元素间进行的算法，如快排、归并排序，甚至是希尔排序。另外，堆排序也不是稳定的。
 
 ### sorting algorithms summary
 
 ![summary](https://img2018.cnblogs.com/blog/886021/201901/886021-20190104172843632-986173496.png)
 
 ## event-driven simulation
+
+介绍了一个借助优先队列实现的刚性球体碰撞的模拟系统，刚性球体模型有以下特点：
+
+- N 个运动的粒子，限制在单元格里。
+- 涉及的碰撞是弹性的，没有能量损失。
+- 每个粒子是已知位置、速度、质量和半径的球体。
+- 不存在其他外力，所以粒子碰撞前做匀速直线运动。
+
+是个理想模型，在既与宏观现象（温度、压力）有关又和微观现象（单个原子和分子的运动）有关的统计力学中十分重要。
+
+用计算机模拟符合这个模型的碰撞系统，其实也就是要知道每个时刻所有粒子的位置和速度，自然地想到时间驱动的解决策略：给定时间 t 时所有粒子的位置和速度，借此算出 经过时间 dt 后粒子的位置，检查是否有发生碰撞，有就回退到碰撞的时间并考虑碰撞的影响。但这样的花费太大，每个粒子检查是否有碰撞就达到了 $N^{2}$ 级别。另外，dt 也不好把握，太大会错过很多碰撞，太小计算成本太高。于是乎，我们来考虑另外一种事件驱动的策略。
+
+事件是未来某个时间的一次潜在碰撞，关联的优先级就是发生的时间，可以用一个优先队列来记录所有事件，快速获取下一次潜在的碰撞。碰撞预测需要些高中物理知识（继重造线代后居然是物理吗），首先，粒子和墙的碰撞相对简单：
+
+![particle-wall](https://img2018.cnblogs.com/blog/886021/201901/886021-20190105164517746-571673565.png)
+
+这里的单元格是边长为 1 的正方形，和其它墙的碰撞类似，不提。
+
+粒子和粒子间的碰撞事件的发生时间比较复杂（这里不考虑多个粒子同时碰撞的情况）：
+
+![particle-particle](https://img2018.cnblogs.com/blog/886021/201901/886021-20190105170917465-738374108.png)
+
+粒子 i 和 j 经过 $\Delta t$ 时间发生碰撞，记 $\sigma$ = $\sigma_{i}$ + $\sigma_{j}$，则有:
+
+$\sigma^{2}$ = $(rx_{i}'-rx_{j}')^{2}$ + $(ry_{i}'-ry_{j}')^{2}$
+
+又因为：
+
+$rx_{i}'$ = $rx_{i}$ + $\Delta t vx_{i}$, $ry_{i}'$ = $ry_{i}$ + $\Delta t vy_{i}$
+
+$rx_{j}'$ = $rx_{j}$ + $\Delta t vx_{j}$, $ry_{j}'$ = $ry_{j}$ + $\Delta t vy_{j}$
+
+带入解 $\Delta t$ 的二元方程得：
+
+![particle-particle-formula](https://img2018.cnblogs.com/blog/886021/201901/886021-20190105170341322-1765368459.png)
+
+其中：
+
+$d = (\Delta v \cdot \Delta r)^{2} - (\Delta v \cdot \Delta v)(\Delta r \cdot \Delta r - \sigma^{2})$
+
+$\Delta r = (\Delta rx, \Delta ry) = (rx_{j} - rx_{i}, ry_{i} - ry_{i})$
+
+$\Delta v = (\Delta vx, \Delta vy) = (vx_{j} - vx_{i}, vy_{i} - vy_{i})$
+
+$\Delta r \cdot \Delta r = (\Delta rx)^{2} + (\Delta ry)^{2}$
+
+$\Delta v \cdot \Delta v = (\Delta vx)^{2} + (\Delta vy)^{2}$
+
+$\Delta v \cdot \Delta r = (\Delta vx)(\Delta rx) + (\Delta vy)(\Delta ry)$
+
+然后，还有一件事，碰撞之后的速度问题，愣是没怎么懂。一般不是动量守恒加机械能守恒（碰撞前后总动能不变那个）联立算碰撞之后的速度，课程大概是把原始式子推来推去？最后用冲量来算也：
+
+>There are three equations governing the elastic collision between a pair of hard discs: (i) conservation of linear momentum, (ii) conservation of kinetic energy, and (iii) upon collision, the normal force acts perpendicular to the surface at the collision point. Physics-ly inclined students are encouraged to derive the equations from first principles; the rest of you may keep reading.
+>
+>- Between two particles. When two hard discs collide, the normal force acts along the line connecting their centers (assuming no friction or spin). The impulse (Jx, Jy) due to the normal force in the x and y directions of a perfectly elastic collision at the moment of contact is:
+>
+>   $J_{x} = \frac{J\Delta rx}{\sigma}$,$J_{y} = \frac{J\Delta ry}{\sigma}$ where $J = \frac{2m_{i}m_{j}(\Delta v\cdot\Delta r)}{\sigma (m_{i} + m_{j})}$
+>
+>and where mi and mj are the masses of particles i and j, and σ, Δx, Δy and Δv ⋅ Δr are defined as above. Once we know the impulse, we can apply Newton's second law (in momentum form) to compute the velocities immediately after the collision.
+>
+>$vx_{i}' = vx_{i} + J_{x}/m_{i}$, $vx_{j}' = vx_{j} - J_{x}/m_{j}$
+>
+>$vy_{i}' = vy_{i} + J_{y}/m_{i}$, $vy_{i}' = vy_{i} - J_{y}/m_{j}$
+
+关于冲量怎么算的，这个链接（[点我](http://www.euclideanspace.com/physics/dynamics/collision/oned/index.htm)）好像有点靠谱，第一眼看上去挺像的，感觉不是重点，不管啦。另外，以上来自：[booksite-61event](https://algs4.cs.princeton.edu/61event/)。
+
+现在，我们把上面讨论的预计碰撞时间和碰撞处理封装到 Particle 类里：
+
+```java
+public class Particle {
+    private double rx, ry;        // position
+    private double vx, vy;        // velocity
+    private final double radius;  // radius;
+    private final double mass;    // mass
+    private int count;            // number of collisions
+
+    public Particle(...) { }
+
+    public void move(double dt) { }
+    public void draw() { }
+
+    // predict collision with particle or wall
+    public double timeToHit(Particle that) { }
+    public double timeToHitVerticalWall() { }
+    public double timeToHitHorizontalWall() { }
+
+    // resolve collision with particle or wall
+    public void bounceOff(particle that) { }
+    public void bounceOffVeerticalWall() { }
+    public void bounceOffHorizontalWall() { }
+}
+```
+
+贴下例子，完整的参见：[Particle.java](https://algs4.cs.princeton.edu/61event/Particle.java.html)。
+
+```java
+public double timeToHit(Particle that) {
+    if (this == that) return INFINITY;
+    double dx = that.rx - this.rx, dy = that.ry - this.ry;
+    double dvx = that.vx - this.vx, dvy = that.vy - this.vy;
+    double dvdr = dx*dvx + dy*dvy;
+    if (dvdr > 0) return INFINITY;
+    double dvdv = dvx*dvx + dvy*dvy;
+    double drdr = dx*dx + dy*dy;
+    double sigma = this.radius + that.radius;
+    double d = (dvdr*dvdr) - dvdv * (drdr - sigma*sigma);
+    if (d < 0) return INFINITY;
+    return -(dvdr + Math.sqrt(d)) / dvdv;
+}
+
+public void bounceOff(Particle that) {
+    double dx = that.rx - this.rx, dy = that.ry - this.ry;
+    double dvx = that.vx - this.vx, dvy = that.vy - this.vy;
+    double dvdr = dx*dvx + dy*dvy;
+    double dist = this.radius + that.radius;
+    double J = 2 * this.mass * that.mass * dvdr / ((this.mass + that.mass) * dist);
+    double Jx = J * dx / dist;
+    double Jy = J * dy / dist;
+    this.vx += Jx / this.mass;
+    this.vy += Jy / this.mass;
+    that.vx -= Jx / that.mass;
+    that.vy -= Jy / that.mass;
+    this.count++;
+    that.count++;
+}
+```
+
+变量 count 记录粒子可能的碰撞次数，会被用于判断一个事件是否有效，像球 A 和球 B 本来会碰撞，但先和球 C 碰了的话，前者就无效了。具体怎么用，再来看看事件，我们把应该放入优先队列中的所有对象信息封装在一个私有类中（各种事件）：
+
+```java
+private class Event implements Comparable<Event> {
+    private double time;         // time of event
+    private Particle a, b;       // particles involved in event
+    private int countA, countB;  // collision counts for a and b
+
+    public Event(double t, Particle a, Particle b) { }
+
+    public int compareTo(Event that) {
+        return this.time - that.time;
+    }
+
+    public boolean isValid() {
+        if (a != null && a.count() != countA) return false;
+        if (b != null && b.count() != countB) return false;
+        return true;
+    }
+}
+```
+
+如果事件从优先队列里取出来时变量 countA 和 countB 没有变化，说明 A B 粒子此前没有发生碰撞，事件仍是有效的；反之事件就是无效的，该丢弃取下一个。
+
+有了上面这些铺垫，模拟的逻辑就很简单：从优先队列里取出最近的有效碰撞事件，按预计时间更新所有粒子的位置，更新参与碰撞的粒子的速度，预计参与碰撞粒子接下来可能发生的碰撞事件并插入优先队列，继续取有效碰撞，循环下去：
+
+```java
+public class CollisionSystem {
+    private MinPQ<Event> pq;      // the priority queue
+    private double t = 0.0;       // simulation clock time
+    private Particle[] particles; // the array of particles
+
+    public CollisionSystem(Pariticle[] particles) { }
+
+    private void predict(Particle a) {
+        if (a == null) return;
+        for (int i = 0; i < particles.length; i++) {
+            double dt = a.timeToHit(particles[i]);
+            pq.insert(new Event(t + dt, a, particles[i]));
+        }
+        pq.insert(new Event(t + a.timeToHitVerticalWall(), a, null));
+        pq.insert(new Event(t + a.timeToHitHorizontalWall(), null, a));
+    }
+
+    public void simulate() {
+        pq = new MinPQ<Event>();
+        for (int i = 0; i < particle.lenght; i++)
+            predict(particles[i]);
+        pq.insert(new Event(0, null, null));
+    }
+
+    while (!pq.isEmpty()) {
+        Event event = pq.delMin();
+        if (!event.isValid()) continue;
+        Particle a = event.a;
+        Particle b = event.b;
+
+        for (int i = 0; i < particles.length; i++)
+            particles[i].move(event.time - t);
+        t = event.time;
+
+        if (a != null && b != null) a.bounceOff(b);
+        else if (a != null && b == null) a.bounceOffVerticalWall();
+        else if (a == null && b != null) b.bounceOffHorizontalWall();
+        else if (a == null && b == null) redraw();
+
+        predict(a);
+        predict(b);
+    }
+}
+```
+
+完整的参见：[CollisionSystem.java](https://algs4.cs.princeton.edu/61event/CollisionSystem.java.html)。
+
+最后，贴些效果图，也是很有趣啊，输入文件在 [booksite-61event](https://algs4.cs.princeton.edu/61event/) 上都有。
+
+模拟花粉的布朗运动：java CollisionSystem < brownian2.txt
+
+![brownian-gif](https://img2018.cnblogs.com/blog/886021/201901/886021-20190107105201005-459906976.gif)
+
+模拟扩散：java CollisionSystem < diffusion.txt
+
+![diffusion-gif](https://img2018.cnblogs.com/blog/886021/201901/886021-20190107104541247-1017735176.gif)
