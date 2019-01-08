@@ -1,4 +1,4 @@
-# 编程作业一
+# 编程作业二
 
 作业链接：[specification](http://coursera.cs.princeton.edu/algs4/assignments/queues.html) & [Checklist](http://coursera.cs.princeton.edu/algs4/checklists/queues.html)
 
