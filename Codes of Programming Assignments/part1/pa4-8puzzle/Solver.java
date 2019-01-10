@@ -30,17 +30,10 @@ public class Solver {
         MinPQ<Node> pq = init(initial);
         MinPQ<Node> twinpq = init(initial.twin());
  
-        // int test = 0;
         while (true) {
-            // test++;
-            // StdOut.println("test= " + test);
-
             Node searchNode = pq.delMin();
             Node predNode = searchNode.pred;
             Board searchBoard = searchNode.board;
-
-            // StdOut.println("searchbord= \n" + searchBoard.toString());
-            // StdOut.println("mdp= " + searchNode.priority);
 
             if (searchBoard.isGoal()) {
                 solvable = true;
@@ -56,7 +49,6 @@ public class Solver {
                     temp.board = b;
                     temp.moves = searchNode.moves + 1;
                     temp.priority = temp.moves + b.manhattan();
-                    // StdOut.println("priority= " + temp.priority + " ");
                     pq.insert(temp);
                 } else {
                     if (!predNode.board.equals(b)) {
@@ -65,7 +57,6 @@ public class Solver {
                         temp.board = b;
                         temp.moves = searchNode.moves + 1;
                         temp.priority = temp.moves + b.manhattan();
-                        // StdOut.println("priority= " + temp.priority + " ");
                         pq.insert(temp);
                     }
                 }
@@ -100,7 +91,6 @@ public class Solver {
                 }
             }
         }
-
     }          
 
     // is the initial board solvable?
@@ -154,19 +144,6 @@ public class Solver {
 
     // solve a slider puzzle (given below)
     public static void main(String[] args) {
-        /*
-        int[][] blocks = {{5, 8, 7}, {1, 4, 6}, {3, 0, 2}};
-        Board initial = new Board(blocks);
-        Solver solver = new Solver(initial);
-        if (!solver.isSolvable())
-            StdOut.println("No solution possible");
-        else {
-            StdOut.println("Minimum number of moves = " + solver.moves());
-            for (Board board : solver.solution())
-                StdOut.println(board);
-        }
-        */
-        
         // create initial board from file
         In in = new In(args[0]);
         int n = in.readInt();
@@ -186,8 +163,6 @@ public class Solver {
             StdOut.println("Minimum number of moves = " + solver.moves());
             for (Board board : solver.solution())
                 StdOut.println(board);
-        }
-        
-    }
-    
+        } 
+    } 
 }

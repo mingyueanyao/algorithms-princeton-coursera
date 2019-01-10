@@ -140,28 +140,5 @@ public class Board {
     }  
     
     // unit tests (not graded)
-    public static void main(String[] args) {
-        /*
-        int[][] blocks = {{2, 0, 3}, {4, 1, 6}, {7, 8, 5}};
-        Board board = new Board(blocks);
-        StdOut.println(board.toString());
-        StdOut.println("is goal? " + board.isGoal());
-        StdOut.println("Hamming = " + board.hamming());
-        StdOut.println("Manhattan = " + board.manhattan());
-
-        Board twinBoard = board.twin();
-        StdOut.println("twinBoard= \n" + twinBoard.toString());
-        StdOut.println("neighbors\n");
-        for (Board b : board.neighbors()) {
-            StdOut.println(b.toString());
-        }
-
-        
-        int[][] blocks2 = {{3, 1, 8}, {4, 0, 2}, {7, 6, 5}};
-        Board board2 = new Board(blocks2);
-        StdOut.println("board2= \n" + board2.toString());
-        StdOut.println("blocks = blocks2? " + board.equals(board2));
-        */
-    }
-
+    public static void main(String[] args) { }
 }
