@@ -1,6 +1,6 @@
-# 编程作业一
+# 编程作业三
 
-作业链接：[specification](http://coursera.cs.princeton.edu/algs4/assignments/collinear.html) & [Checklist](http://coursera.cs.princeton.edu/algs4/checklists/collinear.html)
+作业链接：[Pattern Recognition](http://coursera.cs.princeton.edu/algs4/assignments/collinear.html) & [Checklist](http://coursera.cs.princeton.edu/algs4/checklists/collinear.html)
 
 我的代码：[BruteCollinearPoints.java](https://github.com/mingyueanyao/algorithms-princeton-coursera/blob/master/Codes%20of%20Programming%20Assignments/part1/pa3-collinear/BruteCollinearPoints.java) & [FastCollinearPoints.java](https://github.com/mingyueanyao/algorithms-princeton-coursera/blob/master/Codes%20of%20Programming%20Assignments/part1/pa3-collinear/FastCollinearPoints.java) & [Point.java](https://github.com/mingyueanyao/algorithms-princeton-coursera/blob/master/Codes%20of%20Programming%20Assignments/part1/pa3-collinear/Point.java)
 
