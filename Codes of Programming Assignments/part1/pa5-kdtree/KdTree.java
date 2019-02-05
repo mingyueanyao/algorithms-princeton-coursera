@@ -116,6 +116,7 @@ public class KdTree {
         if (h.divide == VERTICAL) {
             StdDraw.setPenColor(StdDraw.RED);
             StdDraw.setPenRadius();
+            // draw red vertical line
             RectHV rect = new RectHV(h.p.x(), ymin, h.p.x(), ymax);
             rect.draw();
             draw(h.rt, h.p.x(), ymin, xmax, ymax);
@@ -125,6 +126,7 @@ public class KdTree {
         if (h.divide == HORIZONTAL) {
             StdDraw.setPenColor(StdDraw.BLUE);
             StdDraw.setPenRadius();
+            // draw blue horizontal line
             RectHV rect = new RectHV(xmin, h.p.y(), xmax, h.p.y());
             rect.draw();
             draw(h.rt, xmin, h.p.y(), xmax, ymax);

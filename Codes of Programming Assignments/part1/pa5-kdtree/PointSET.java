@@ -45,10 +45,8 @@ public class PointSET {
     
     // draw all points to standard draw 
     public void draw() { 
-        for (Iterator<Point2D> iter = points.iterator(); iter.hasNext();) {
-            Point2D p = iter.next();
+        for (Point2D p : points)
             p.draw();
-        }
     } 
     
      // all points that are inside the rectangle (or on the boundary) 
@@ -62,8 +60,7 @@ public class PointSET {
         double xmax = rect.xmax();
         double ymax = rect.ymax();
         Stack<Point2D> pointsInRect = new Stack<Point2D>();
-        for (Iterator<Point2D> iter = points.iterator(); iter.hasNext();) {
-            Point2D p = iter.next();
+        for (Point2D p : points) {
             double x = p.x();
             double y = p.y();
             if (x >= xmin && x <= xmax && y >= ymin && y <= ymax) {
@@ -85,8 +82,7 @@ public class PointSET {
 
         double dist = 0xffff;
         Point2D nearestP = null;
-        for (Iterator<Point2D> iter = points.iterator(); iter.hasNext();) {
-            Point2D tmp = iter.next();
+        for (Point2D tmp : points) {
             if (tmp.distanceSquaredTo(p) < dist) {
                 dist = tmp.distanceSquaredTo(p);
                 nearestP = tmp;
