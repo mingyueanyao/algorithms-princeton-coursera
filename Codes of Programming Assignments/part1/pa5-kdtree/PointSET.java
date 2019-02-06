@@ -3,8 +3,6 @@ import edu.princeton.cs.algs4.RectHV;
 import edu.princeton.cs.algs4.Stack;
 import edu.princeton.cs.algs4.SET;
 
-import java.util.Iterator;
-
 public class PointSET {
     private SET<Point2D> points;
 
