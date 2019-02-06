@@ -75,9 +75,7 @@ contains() 方法注意相同值一样地处理，x 节点相同 x 值找右边�
 
 红色铅垂线和蓝色水平线直接借助矩形数据类型的 draw() 方法来画其实。
 
-然后实现 range() 方法，当前搜索点代表的矩形可以通过一些信息就地构造出来，如果和查询矩形没有相交，那么也就没有继续搜索下去的必要。nearest() 方法需要尽快找到一个比较近的点，这样才有可能剪枝，提高效率，所以倾向于先搜索和查询点一个方向的子树，因为一般来说较近点在一个方向。另外，[Checklist](http://coursera.cs.princeton.edu/algs4/checklists/kdtree.html) 最后提示的改进里提醒说，直接用距离的平方就好，平方根的消耗是可以省去的。
-
-详见：[KdTree.java](https://github.com/mingyueanyao/algorithms-princeton-coursera/blob/master/Codes%20of%20Programming%20Assignments/part1/pa5-kdtree/KdTree.java)。
+然后实现 range() 方法，当前搜索点代表的矩形可以通过一些信息就地构造出来，如果和查询矩形没有相交，那么也就没有继续搜索下去的必要。nearest() 方法需要尽快找到一个比较近的点，这样才有可能剪枝，提高效率，所以倾向于先搜索和查询点一个方向的子树，因为一般来说较近点在一个方向。另外，[Checklist](http://coursera.cs.princeton.edu/algs4/checklists/kdtree.html) 最后提示的改进里提醒说，直接用距离的平方就好，平方根的消耗是可以省去的。这两直接也直接看吧：[KdTree.java](https://github.com/mingyueanyao/algorithms-princeton-coursera/blob/master/Codes%20of%20Programming%20Assignments/part1/pa5-kdtree/KdTree.java)。
 
 ## 测试结果
 
