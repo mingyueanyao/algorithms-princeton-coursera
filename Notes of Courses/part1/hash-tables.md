@@ -91,6 +91,57 @@ private int hash(Key x) {
 
 ## separate chaining
 
+基于分离链法的散列表。哈希函数把键转化为数组索引，接着哈希算法的第二步是碰撞处理（collision resolution）：一种当两个或者更多待插入的键哈希出同样索引的处理策略。碰撞处理的一个很直接的方法是，给 M 个数组索引都对应一个链表，用来存放哈希出这个索引的键的键值对。基础思想是要选择足够大的 M，使得所有链表都尽可能短以保证高效地查找。查找分两步：首先根据散列值找到对应的链表，然后沿着链表顺序查找相应的键。
+
+![separate-chaining]()
+
+代码：
+
+```java
+public class SeparateChainingHashST<Key, Value> {
+    private int M = 97;                 // number of chains
+    private Node[] st = new Node[M];    // array of chains
+
+    private static class Node {
+        private Object key;
+        private Object val;
+        private Node next;
+        ...
+    }
+
+    private int hash(Key key) {
+        return (key.hashCode() & 0xfffffff0) % M;
+    }
+
+    public Value get(Key key) {
+        int i = hash(key);
+        for (Node x = st[i]; x != null; x = x.next) {
+            if (key.equals(x.key)) {
+                return (Value) x.val;
+            }
+        }
+        return null;
+    }
+
+    public void put(Key key, Value val) {
+        int i = hash(key);
+        // update the value if key-value pair already in the linked-list
+        for (node x = st[i]; x != null; x = x.next) {
+            if (key.equals(x.key)) {
+                x.val = val;
+                return;
+            }
+        }
+        // put the new key-value pair in the first place
+        st[i] = new Node(key, val, st[i]);
+    }
+}
+```
+
+在一张含有 M 条链表和 N 个键的散列表中，（在均匀散列假设成立的情况下）任意一条链表中的键的数量均在 N/M 的常数因子范围内的概率无限趋向于 1。
+
+在一张含有 M 条链表和 N 个键的散列表中，未命中查找和插入操作所需的比较次数为 ~N/M。
+
 ## linear probing
 
 ## context
